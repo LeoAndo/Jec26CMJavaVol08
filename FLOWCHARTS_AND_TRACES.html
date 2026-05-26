@@ -1,0 +1,5718 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Java基礎 Vol.08 メソッド - フローチャートとトレース表</title>
+<style>
+  :root {
+    --fg: #1f2328;
+    --bg: #ffffff;
+    --muted: #57606a;
+    --border: #d0d7de;
+    --code-bg: #f6f8fa;
+    --link: #0969da;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    color: var(--fg);
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+    line-height: 1.7;
+  }
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 6rem;
+  }
+  h1, h2, h3, h4 { line-height: 1.3; }
+  h1 { font-size: 2.0rem; border-bottom: 2px solid var(--border); padding-bottom: 0.4rem; margin-top: 0; }
+  h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; margin-top: 2.4rem; }
+  h3 { font-size: 1.15rem; margin-top: 1.6rem; }
+  h4 { font-size: 1.0rem; margin-top: 1.3rem; }
+  p { margin: 0.6rem 0; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.4rem 0; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.2rem 0; }
+  code {
+    background: var(--code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 0.9rem 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9em;
+  }
+  pre code { background: transparent; padding: 0; }
+  pre.mermaid {
+    background: #ffffff;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.9rem 0;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th { background: var(--code-bg); }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 640px) {
+    main { padding: 1rem 0.75rem 4rem; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+<h1 id="java基礎-vol08-メソッド---フローチャートとトレース表">Java基礎 Vol.08 メソッド - フローチャートとトレース表</h1>
+<p>この資料は <code>src/</code> 配下にあるすべての Java ファイル（全 123 ファイル）を対象に、 1 ファイルにつき 1 つのフローチャートとトレース表で動作（または <code>javac</code> の判定）を整理します。</p>
+<ul>
+<li>正常に実行できるサンプルは「実行の流れ」と「出力結果」を確認するためのものです。</li>
+<li>コンパイルエラーになる教材は「<code>javac</code> がどの規則で止まるか」を確認するためのものです。コメントアウト状態のソースが多いため、エラーを観察するときは該当行のコメントを外して 1 ファイルずつコンパイルしてください。</li>
+</ul>
+<h2 id="目次">目次</h2>
+<ol>
+<li><a href="#1-デフォルトパッケージ-src-のファイル">デフォルトパッケージ <code>src/</code> のファイル</a></li>
+<li><a href="#2-パッケージ-vol08_2-のファイル">パッケージ <code>vol08_2</code> のファイル</a></li>
+<li><a href="#3-パッケージ-vol08_3-のファイル">パッケージ <code>vol08_3</code> のファイル</a></li>
+</ol>
+<h2 id="共通フローチャート（コンパイル全体の流れ）">共通フローチャート（コンパイル全体の流れ）</h2>
+<pre class="mermaid">
+flowchart TD
+    A([javac 起動]) --&gt; B[&quot;ソースを読む&quot;]
+    B --&gt; C[&quot;メソッド定義と呼び出しを検査&quot;]
+    C --&gt; D{&quot;Java の規則に合う?&quot;}
+    D -- Yes --&gt; E[&quot;class ファイル生成&quot;]
+    E --&gt; F([java で実行])
+    D -- No --&gt; G[&quot;コンパイルエラーを表示&quot;]
+    G --&gt; H([終了])
+    F --&gt; H
+</pre>
+<hr />
+<h1 id="1-デフォルトパッケージ-src-のファイル">1. デフォルトパッケージ <code>src/</code> のファイル</h1>
+<h2 id="main">Main</h2>
+<ul>
+<li>対象ファイル: <code>src/Main.java</code></li>
+<li>テーマ: 値渡しと参照渡し（基本型 / 配列 / String / 自作クラス）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">int[] arrayInt = {10, 20, 30};
+foo(arrayInt);   // インスタンス自体を差し替えても呼び出し元は変わらない
+foo2(arrayInt);  // 要素を書き換えると呼び出し元の配列にも反映
+
+Person person = new Person();
+person.age = 21;
+foo(person);     // person変数を差し替えても呼び出し元は変わらない
+foo2(person);    // person.age を書き換えると反映</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;int[], int, String, Person のインスタンスを生成&quot;]
+    B --&gt; C[&quot;foo に渡してメソッド内で別インスタンスを代入&quot;]
+    C --&gt; D[&quot;呼び出し元の参照は元のインスタンスのまま&quot;]
+    D --&gt; E[&quot;foo2 に渡してフィールド/要素を更新&quot;]
+    E --&gt; F[&quot;呼び出し元のインスタンス内容が変わる&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>対象</th>
+<th>メソッド内の操作</th>
+<th>呼び出し元の見え方</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int[] arrayInt</code></td>
+<td><code>abc = new int[]{...}</code></td>
+<td>元の <code>{10,20,30}</code> のまま</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>int[] arrayInt</code></td>
+<td><code>abc[0] = 987</code></td>
+<td><code>arrayInt[0]</code> が 987 に変わる</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>int a</code></td>
+<td><code>a = 444</code></td>
+<td>元の 555 のまま</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>String aaa</code></td>
+<td><code>aaa = &quot;dasdasadsa&quot;</code></td>
+<td>元の <code>&quot;asasa&quot;</code> のまま</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>Person person</code></td>
+<td><code>person = new Person()</code></td>
+<td>元のインスタンスのまま</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>Person person</code></td>
+<td><code>person.age = 999</code></td>
+<td><code>person.age</code> が 999 に変わる</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>参照型は「参照（インスタンスの場所）の値渡し」です。仮引数を別インスタンスに付け替えても呼び出し元には影響しません。一方、参照を通じてインスタンスの中身（要素やフィールド）を書き換えると呼び出し元にも反映されます。</p>
+<hr />
+<h2 id="kakunin01">Kakunin01</h2>
+<ul>
+<li>対象ファイル: <code>src/Kakunin01.java</code></li>
+<li>テーマ: 識別子と予約語、確認問題。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">private static void _$() { ... }   // OK
+private static void Void() { ... } // OK（Voidは識別子）
+private static void 12Test() { ... }    // NG: 数字始まり
+private static void static() { ... }    // NG: 予約語
+private static void Test#() { ... }     // NG: # は使えない
+private static void class() { ... }     // NG: 予約語</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;各メソッド名を確認&quot;]
+    B --&gt; C{&quot;識別子として有効?&quot;}
+    C -- Yes --&gt; D[&quot;クラスに登録&quot;]
+    C -- No --&gt; E[&quot;構文エラー&quot;]
+    E --&gt; F([終了])
+    D --&gt; F
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>メソッド名</th>
+<th>判定</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>_$</code>, <code>Void</code>, <code>MAX</code>, <code>TRUE</code>, <code>Synchronized</code></td>
+<td>アンダースコア/ドル/大文字始まりは識別子として有効</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>12Test</code></td>
+<td>数字始まり</td>
+<td>エラー</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>static</code>, <code>class</code>, <code>native</code>, <code>strictfp</code></td>
+<td>予約語</td>
+<td>エラー</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>Test#</code></td>
+<td><code>#</code> は識別子文字に含まれない</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>メソッド名は「英字 / アンダースコア / <code>$</code> 始まり」かつ「予約語ではない」必要があります。<code>Void</code> や <code>TRUE</code> は予約語ではないので識別子として使えます（が、可読性のため避けます）。</p>
+<hr />
+<h2 id="samplemethod01a">SampleMethod01a</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethod01a.java</code></li>
+<li>テーマ: メソッド未使用の素朴な計算（重複したコードの例）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">int price1 = 1200;
+int total1 = (int)(price1 + price1 * 0.1);
+System.out.println(&quot;税込価格 : &quot; + total1 + &quot;円&quot;);
+int price2 = 1000;
+int total2 = (int)(price2 + price2 * 0.1);
+System.out.println(&quot;税込価格 : &quot; + total2 + &quot;円&quot;);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;price1 = 1200&quot;]
+    B --&gt; C[&quot;total1 = (int)(price1 + price1*0.1)&quot;]
+    C --&gt; D[&quot;税込価格を表示&quot;]
+    D --&gt; E[&quot;price2 = 1000&quot;]
+    E --&gt; F[&quot;total2 = (int)(price2 + price2*0.1)&quot;]
+    F --&gt; G[&quot;税込価格を表示&quot;]
+    G --&gt; H([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>変数</th>
+<th>値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>price1</code></td>
+<td>1200</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>total1</code></td>
+<td>1320</td>
+<td><code>税込価格 : 1320円</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>price2</code></td>
+<td>1000</td>
+<td>-</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>total2</code></td>
+<td>1100</td>
+<td><code>税込価格 : 1100円</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>同じ計算式が 2 回出てきます。次の <code>SampleMethod01b</code> で共通処理をメソッドに切り出します。</p>
+<hr />
+<h2 id="samplemethod01b">SampleMethod01b</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethod01b.java</code></li>
+<li>テーマ: 計算をメソッドに切り出す（戻り値あり）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">private static int calcTaxedPrice(int price) {
+    int total = (int)(price + price * 0.1);
+    return total;
+}
+
+public static void main(String[] args) {
+    int total1 = calcTaxedPrice(1200);
+    System.out.println(&quot;税込価格 : &quot; + total1 + &quot;円&quot;);
+    int total2 = calcTaxedPrice(1000);
+    System.out.println(&quot;税込価格 : &quot; + total2 + &quot;円&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;calcTaxedPrice(1200) を呼ぶ&quot;]
+    B --&gt; C[&quot;price = 1200 で計算&quot;]
+    C --&gt; D[&quot;total = 1320 を返す&quot;]
+    D --&gt; E[&quot;税込価格 1320 を表示&quot;]
+    E --&gt; F[&quot;calcTaxedPrice(1000) を呼ぶ&quot;]
+    F --&gt; G[&quot;price = 1000 で計算&quot;]
+    G --&gt; H[&quot;total = 1100 を返す&quot;]
+    H --&gt; I[&quot;税込価格 1100 を表示&quot;]
+    I --&gt; J([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th><code>price</code></th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>calcTaxedPrice(1200)</code></td>
+<td>1200</td>
+<td>1320</td>
+<td><code>税込価格 : 1320円</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>calcTaxedPrice(1000)</code></td>
+<td>1000</td>
+<td>1100</td>
+<td><code>税込価格 : 1100円</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>繰り返し使う計算は、引数と戻り値を持つメソッドにまとめると重複が減らせます。</p>
+<hr />
+<h2 id="samplemethod01c">SampleMethod01c</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethod01c.java</code></li>
+<li>テーマ: 表示処理もメソッドに切り出す（戻り値なし）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">private static void showTaxedPrice(int total) {
+    System.out.println(&quot;税込価格 : &quot; + total + &quot;円&quot;);
+}
+
+private static int calcTaxedPrice(int price) {
+    return (int)(price + price * 0.1);
+}
+
+public static void main(String[] args) {
+    int total1 = calcTaxedPrice(1200);
+    showTaxedPrice(total1);
+    int total2 = calcTaxedPrice(1000);
+    showTaxedPrice(total2);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;calcTaxedPrice(1200) → 1320&quot;]
+    B --&gt; C[&quot;showTaxedPrice(1320)&quot;]
+    C --&gt; D[&quot;calcTaxedPrice(1000) → 1100&quot;]
+    D --&gt; E[&quot;showTaxedPrice(1100)&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>calcTaxedPrice(1200)</code></td>
+<td>1320</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>showTaxedPrice(1320)</code></td>
+<td>（void）</td>
+<td><code>税込価格 : 1320円</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>calcTaxedPrice(1000)</code></td>
+<td>1100</td>
+<td>-</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>showTaxedPrice(1100)</code></td>
+<td>（void）</td>
+<td><code>税込価格 : 1100円</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>「計算する」「表示する」のように責務を分けると、各メソッドが小さく読みやすくなります。</p>
+<hr />
+<h2 id="samplemethodlocal01-default-package">SampleMethodLocal01 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethodLocal01.java</code></li>
+<li>テーマ: 同名のローカル変数は別物（スコープ）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() {
+    int x = 100; // foo 内の x
+}
+
+public static void main(String[] args) {
+    int x = 200; // main 内の x（別物）
+    foo();
+    System.out.println(x); // 200
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;main の x = 200&quot;]
+    B --&gt; C[&quot;foo() を呼ぶ&quot;]
+    C --&gt; D[&quot;foo の x = 100（main の x とは別）&quot;]
+    D --&gt; E[&quot;foo から戻る&quot;]
+    E --&gt; F[&quot;println(x) は main の x を見る&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code> の値</th>
+<th>補足</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>200</td>
+<td>宣言・初期化</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td>100</td>
+<td>foo 内ローカル</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code> 戻り後</td>
+<td>200</td>
+<td>出力は 200</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>同名でも宣言場所が違えば別の変数として扱われます。出力は 200 です。</p>
+<hr />
+<h2 id="samplemethodlocal05-default-package">SampleMethodLocal05 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethodLocal05.java</code></li>
+<li>テーマ: 配列引数の参照渡し（要素を読む）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) {
+    for (int i = 0; i &lt; a.length; i++) {
+        System.out.println(a[i]);
+    }
+}
+
+public static void main(String[] args) {
+    int[] a = { 11, 22, 33 };
+    foo(a);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;int[] a = {11,22,33} を生成&quot;]
+    B --&gt; C[&quot;foo(a) を呼ぶ（参照を渡す）&quot;]
+    C --&gt; D[&quot;foo 内の a で要素を順に出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>a</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td><code>{11,22,33}</code> のインスタンス</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> 内</td>
+<td>同じインスタンスを参照</td>
+<td><code>11</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>foo</code> 内</td>
+<td>〃</td>
+<td><code>22</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>foo</code> 内</td>
+<td>〃</td>
+<td><code>33</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>配列はメソッドに渡しても新しくコピーされません。同じインスタンスを共有して参照します。</p>
+<hr />
+<h2 id="samplemethodlocal06-default-package">SampleMethodLocal06 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleMethodLocal06.java</code></li>
+<li>テーマ: 配列を戻り値として返す。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] foo() {
+    int[] a = { 10, 20, 30 };
+    return a;
+}
+
+public static void main(String[] args) {
+    int[] b = foo();
+    for (int i = 0; i &lt; b.length; i++) {
+        System.out.println(b[i]);
+    }
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo() を呼ぶ&quot;]
+    B --&gt; C[&quot;foo 内で int[] a = {10,20,30} を生成&quot;]
+    C --&gt; D[&quot;a を return&quot;]
+    D --&gt; E[&quot;b = 戻ってきた配列の参照&quot;]
+    E --&gt; F[&quot;b[0], b[1], b[2] を出力&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th>変数</th>
+<th>値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo</code></td>
+<td><code>a</code></td>
+<td><code>{10,20,30}</code> のインスタンス</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main</code></td>
+<td><code>b</code></td>
+<td><code>a</code> と同じインスタンス</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code></td>
+<td>-</td>
+<td>-</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>main</code></td>
+<td>-</td>
+<td>-</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>main</code></td>
+<td>-</td>
+<td>-</td>
+<td><code>30</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>メソッド内で作った配列も <code>return</code> で参照を返せます。呼び出し元はそのインスタンスを使い続けられます。</p>
+<hr />
+<h2 id="sampleoverload01-default-package">SampleOverload01 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleOverload01.java</code></li>
+<li>テーマ: 引数の個数違いによるオーバーロード。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int add(int v, int w) { return v + w; }
+static int add(int v, int w, int u) { return v + w + u; }
+
+add(12, 3);
+add(12, 3, 4);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;add(int, int) と add(int, int, int) を登録&quot;]
+    B --&gt; C[&quot;add(12, 3) を呼ぶ&quot;]
+    C --&gt; D[&quot;引数 2 個 → add(int, int) を選択&quot;]
+    D --&gt; E[&quot;add(12, 3, 4) を呼ぶ&quot;]
+    E --&gt; F[&quot;引数 3 個 → add(int, int, int) を選択&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>選ばれたメソッド</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>add(12,3)</code></td>
+<td><code>add(int,int)</code></td>
+<td>15</td>
+<td><code>2項足すメソッド:</code> / <code>x + y = 15</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>add(12,3,4)</code></td>
+<td><code>add(int,int,int)</code></td>
+<td>19</td>
+<td><code>3項足すメソッド:</code> / <code>x + y + z = 19</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>「メソッド名 + 引数の型と数」が違えば、同じ名前の別メソッドとして共存できます（オーバーロード）。</p>
+<hr />
+<h2 id="samplereturn02-default-package">SampleReturn02 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/SampleReturn02.java</code></li>
+<li>テーマ: 配列と String を返すメソッド（教材用メッセージ表示）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] foo1() { return new int[]{10,20,30}; }
+static String foo2() { return &quot;ABC&quot;; }
+
+public static void main(String[] args) {
+    System.out.println(&quot;「確認問題：メソッドの呼び出し」を行う時間とします。問題数は19問。&quot;);
+    System.out.println(&quot;足並み揃ったあたりで、解説を行います&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo1, foo2 は定義だけ&quot;]
+    B --&gt; C[&quot;コメント部分は呼び出していない&quot;]
+    C --&gt; D[&quot;教材用メッセージを 2 行表示&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>操作</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1 行目を表示</td>
+<td><code>「確認問題：メソッドの呼び出し」を行う時間とします。問題数は19問。</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>2 行目を表示</td>
+<td><code>足並み揃ったあたりで、解説を行います</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>foo1</code>, <code>foo2</code> は定義のみで呼び出されていません。コメントを外すと配列インスタンスの <code>hashCode</code> や <code>String</code> の出力を確認できます。</p>
+<hr />
+<h2 id="signaturesample01">SignatureSample01</h2>
+<ul>
+<li>対象ファイル: <code>src/SignatureSample01.java</code></li>
+<li>テーマ: 引数の個数が違えばオーバーロードとして区別される。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">private static int foo(int i, int j, int k, int l) { return 0; }
+private static int foo(int i, int j, int k) { return 0; }
+
+foo(1, 2, 3);       // 3 引数版
+foo(1, 2, 3, 4);    // 4 引数版</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int,int,int) と foo(int,int,int,int) を登録&quot;]
+    B --&gt; C{&quot;シグネチャが違う?&quot;}
+    C -- Yes --&gt; D[&quot;どちらも定義可能&quot;]
+    D --&gt; E[&quot;呼び出しは引数個数で解決&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>一致する定義</th>
+<th>戻り値</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(1,2,3)</code></td>
+<td><code>foo(int,int,int)</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo(1,2,3,4)</code></td>
+<td><code>foo(int,int,int,int)</code></td>
+<td>0</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数の個数が違えば、同じメソッド名でも別シグネチャとして両方とも定義できます。</p>
+<hr />
+<h2 id="test0801-default-package">Test0801 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0801.java</code></li>
+<li>テーマ: 基本型の値渡し。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { x *= 10; }
+int x = 1;
+foo(x);
+System.out.print(x); // 1</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;x = 1&quot;]
+    B --&gt; C[&quot;foo(x): 値 1 のコピーを渡す&quot;]
+    C --&gt; D[&quot;foo 内 x = 10（コピーが変わる）&quot;]
+    D --&gt; E[&quot;foo から戻る&quot;]
+    E --&gt; F[&quot;main の x はまだ 1&quot;]
+    F --&gt; G([出力: 1])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> 開始時</td>
+<td>1（コピー）</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>foo</code> 内</td>
+<td>10</td>
+<td>-</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>main</code> 戻り後</td>
+<td>1</td>
+<td><code>1</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>基本型を渡すと「値のコピー」が渡ります。メソッド内で書き換えても呼び出し元には影響しません。</p>
+<hr />
+<h2 id="test0802-default-package">Test0802 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0802.java</code></li>
+<li>テーマ: 引数なしのメソッド内のローカル変数は呼び出し元と無関係。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() {
+    int x = 777;
+    System.out.println(x); // 777
+}
+
+int x = 100;
+foo();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;main の x = 100&quot;]
+    B --&gt; C[&quot;foo() を呼ぶ&quot;]
+    C --&gt; D[&quot;foo の x = 777（別物）&quot;]
+    D --&gt; E[&quot;println(x) は foo の x を見る&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>100</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td>777</td>
+<td><code>777</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> の <code>x</code> と <code>foo</code> の <code>x</code> は完全に別の変数です。</p>
+<hr />
+<h2 id="test0803-default-package">Test0803 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0803.java</code></li>
+<li>テーマ: 値渡しの再確認（<code>x * 100</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { x = x * 100; }
+int x = 12;
+foo(x);
+System.out.println(x); // 12</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;x = 12&quot;]
+    B --&gt; C[&quot;foo(12) を呼ぶ&quot;]
+    C --&gt; D[&quot;foo 内 x = 1200&quot;]
+    D --&gt; E[&quot;foo から戻る&quot;]
+    E --&gt; F([出力: 12])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>12</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> 内</td>
+<td>1200</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code> 戻り後</td>
+<td>12</td>
+<td><code>12</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>基本型は値渡し。<code>Test0801</code> と同じ理屈で、<code>main</code> 側の <code>x</code> は変わりません。</p>
+<hr />
+<h2 id="test0804-default-package">Test0804 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0804.java</code></li>
+<li>テーマ: メソッドからメソッドを呼ぶ（戻り値の連鎖）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return x * 2; }
+static int foo(int x) {
+    x = x * 10;
+    return bar(x);
+}
+
+int x = 12;
+foo(x);                // 戻り値は捨てる
+System.out.println(foo(x));</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo(12) 1 回目（戻り値捨て）&quot;]
+    B --&gt; C[&quot;foo 内 x = 120 → bar(120)&quot;]
+    C --&gt; D[&quot;bar が 240 を返す&quot;]
+    D --&gt; E[&quot;foo(12) 2 回目で println&quot;]
+    E --&gt; F[&quot;同じ流れで 240 が返る&quot;]
+    F --&gt; G([出力: 240])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th><code>foo</code> 内 <code>x</code></th>
+<th><code>bar</code> の戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(12)</code>（1 回目）</td>
+<td>120</td>
+<td>240</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo(12)</code>（2 回目）</td>
+<td>120</td>
+<td>240</td>
+<td><code>240</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>戻り値はそのまま <code>println</code> の引数や別メソッドの引数に渡せます。同じ呼び出しは独立に評価されます。</p>
+<hr />
+<h2 id="test0805-default-package">Test0805 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0805.java</code></li>
+<li>テーマ: メソッド呼び出し順と出力順。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void bar() { System.out.println(&quot;A&quot;); }
+static void foo() {
+    bar();
+    System.out.println(&quot;B&quot;);
+}
+
+foo();
+bar();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo() を呼ぶ&quot;]
+    B --&gt; C[&quot;foo 内で bar() を呼ぶ → A&quot;]
+    C --&gt; D[&quot;foo 内で B を表示&quot;]
+    D --&gt; E[&quot;main で bar() を呼ぶ → A&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>bar</code> (foo 経由)</td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td><code>B</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bar</code> (main 直接)</td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>出力は <code>A</code> <code>B</code> <code>A</code> の順。メソッドは呼ばれた場所で順に評価されます。</p>
+<hr />
+<h2 id="test0806-default-package">Test0806 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0806.java</code></li>
+<li>テーマ: メソッド呼び出しと戻り値の組み合わせ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return 2 + x; }
+static int foo() {
+    int x = 1;
+    int y;
+    y = bar(x); // 3
+    x = x + 1;
+    return y;
+}
+
+int foo = foo();    // 3
+int bar = bar(1);   // 3
+System.out.println(foo + bar); // 6</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo() 呼び出し&quot;]
+    B --&gt; C[&quot;foo 内 x=1, y = bar(1) = 3&quot;]
+    C --&gt; D[&quot;foo は 3 を返す&quot;]
+    D --&gt; E[&quot;bar(1) を呼ぶ → 3&quot;]
+    E --&gt; F[&quot;3 + 3 = 6 を表示&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo()</code></td>
+<td>3</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>bar(1)</code></td>
+<td>3</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>println(foo+bar)</code></td>
+<td>-</td>
+<td><code>6</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>ローカル変数名がメソッド名と同じ <code>foo</code>, <code>bar</code> でも問題なく動きます（識別はコンパイラがします）。</p>
+<hr />
+<h2 id="test0807-default-package">Test0807 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0807.java</code></li>
+<li>テーマ: <code>static</code> メソッド同士の呼び出し（このバージョンは正常）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return 2 + x; }
+static int foo() {
+    int x = 5;
+    x = bar(x); // 7
+    return x;
+}
+System.out.println(foo()); // 7</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo() を呼ぶ&quot;]
+    B --&gt; C[&quot;foo 内 x=5, x = bar(5) = 7&quot;]
+    C --&gt; D[&quot;foo は 7 を返す&quot;]
+    D --&gt; E([出力: 7])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo</code></td>
+<td>5 → 7</td>
+<td>7</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main</code></td>
+<td>-</td>
+<td>-</td>
+<td><code>7</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>static</code> メソッド同士は、インスタンスなしで直接呼び合えます。 <code>vol08_2/Test0807</code> の <code>static</code> 抜きケースと比較してください。</p>
+<hr />
+<h2 id="test0808-default-package">Test0808 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0808.java</code></li>
+<li>テーマ: メソッドの戻り値を別メソッドの引数にする。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return 2 * x; }
+static int foo(int x) { return x + 1; }
+
+int foo = foo(1);     // 2
+int bar = bar(foo);   // 4
+System.out.println(bar); // 4</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo(1) = 2&quot;]
+    B --&gt; C[&quot;bar(2) = 4&quot;]
+    C --&gt; D([出力: 4])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>戻り値</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(1)</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>bar(2)</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>println(4)</code></td>
+<td>-</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>bar(foo(1))</code> のように直接ネストもできますが、変数に入れて分解すると読みやすくなります。</p>
+<hr />
+<h2 id="test0809-default-package">Test0809 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0809.java</code></li>
+<li>テーマ: 戻り値での拡大変換（<code>int</code> → <code>double</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static double bar(int x) {
+    return x; // int → double に自動拡大
+}
+double d = bar(7);
+System.out.println(d); // 7.0</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;bar(7) を呼ぶ&quot;]
+    B --&gt; C[&quot;x = 7（int）&quot;]
+    C --&gt; D[&quot;return x は double に拡大変換&quot;]
+    D --&gt; E[&quot;d = 7.0&quot;]
+    E --&gt; F([出力: 7.0])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>値</th>
+<th>型</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>7</td>
+<td><code>int</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>7.0</td>
+<td><code>double</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-</td>
+<td>-</td>
+<td><code>7.0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>戻り値型の方が広い型なら、<code>return</code> 時に自動で拡大変換されます。</p>
+<hr />
+<h2 id="test0810-default-package">Test0810 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0810.java</code></li>
+<li>テーマ: 引数の縮小変換にはキャストが必要（このバージョンは <code>(char)</code> 付きで正常）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(char x) { return x; }
+int x = 65;
+x = bar((char) x);
+System.out.println(x); // 65</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;int x = 65&quot;]
+    B --&gt; C[&quot;(char) x で &#x27;A&#x27; に変換&quot;]
+    C --&gt; D[&quot;bar(&#x27;A&#x27;) を呼ぶ&quot;]
+    D --&gt; E[&quot;return x は char → int に拡大&quot;]
+    E --&gt; F([出力: 65])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th>値</th>
+<th>型</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>65</td>
+<td><code>int</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>bar</code> 引数</td>
+<td><code>&#x27;A&#x27;</code> (= 65)</td>
+<td><code>char</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bar</code> 戻り値</td>
+<td>65</td>
+<td><code>int</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>main</code> 出力</td>
+<td><code>65</code></td>
+<td>-</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>int</code> → <code>char</code> は縮小変換なので、<code>(char)</code> を明示的に書きます。 <code>vol08_2/Test0810</code> ではキャストがなく、コンパイルエラーになります。</p>
+<hr />
+<h2 id="test0811-default-package">Test0811 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0811.java</code></li>
+<li>テーマ: 引数の拡大変換（<code>long</code> → <code>float</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void bar(float x) { System.out.println(x); }
+long x = 10;
+bar(x); // 自動拡大</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;long x = 10&quot;]
+    B --&gt; C[&quot;bar(x): long → float へ自動拡大&quot;]
+    C --&gt; D[&quot;bar 内で x = 10.0f&quot;]
+    D --&gt; E([出力: 10.0])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>値</th>
+<th>型</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10</td>
+<td><code>long</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10.0</td>
+<td><code>float</code></td>
+<td><code>10.0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>long</code> → <code>float</code> は精度低下の可能性がありますが、Java では拡大変換として暗黙に許可されます。</p>
+<hr />
+<h2 id="test0812-default-package">Test0812 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0812.java</code></li>
+<li>テーマ: 引数なしの正しい書き方（こちらは正常版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() { System.out.print(&quot;A&quot;); }
+static void bar(short x) {
+    foo();
+    System.out.println(&quot;B&quot;);
+}
+short s = 1;
+foo();
+bar(s);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;foo() を呼ぶ → A&quot;]
+    B --&gt; C[&quot;bar(1) を呼ぶ&quot;]
+    C --&gt; D[&quot;bar 内 foo() → A&quot;]
+    D --&gt; E[&quot;bar 内 B を表示&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo</code> (main 直接)</td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> (bar 経由)</td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bar</code></td>
+<td><code>B</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数なしは <code>foo()</code> と空の <code>()</code> で書きます。 <code>vol08_2/Test0812</code> の <code>foo(void)</code> という誤記とは別物です。</p>
+<hr />
+<h2 id="test0813-default-package">Test0813 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0813.java</code></li>
+<li>テーマ: <code>byte</code> 戻り値と複合代入。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static byte foo() {
+    byte b = 1;
+    b += 1;   // b = (byte)(b + 1) と等価。複合代入は自動でキャスト
+    return b; // 2
+}
+System.out.print(foo()); // 2</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() を呼ぶ&quot;]
+    B --&gt; C[&quot;b = 1&quot;]
+    C --&gt; D[&quot;b += 1 は (byte)(b+1) と同じ&quot;]
+    D --&gt; E[&quot;b = 2 を return&quot;]
+    E --&gt; F([出力: 2])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>b</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-</td>
+<td><code>2</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>b += 1</code> は自動キャストされるので <code>byte</code> のままです。 <code>b = b + 1</code> はそのままでは <code>int</code> になるためコンパイルエラーになります。</p>
+<hr />
+<h2 id="test0814-default-package">Test0814 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0814.java</code></li>
+<li>テーマ: 配列引数と要素の初期値。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) {
+    for (int x : a) System.out.println(x);
+}
+
+int[] a = new int[3];
+for (int i = 0; i &lt; a.length; i++) a[i] = a[i] + 10;
+foo(a);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;int[3] を生成（初期値 0）&quot;]
+    B --&gt; C[&quot;全要素に +10 → {10,10,10}&quot;]
+    C --&gt; D[&quot;foo(a) を呼び、各要素を出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>a</code> の中身</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>{0,0,0}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>{10,10,10}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>foo</code> 1 周目</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>〃 2 周目</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>〃 3 周目</td>
+<td><code>10</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>new int[3]</code> は要素 0 で初期化されます。</p>
+<hr />
+<h2 id="test0815-default-package">Test0815 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0815.java</code></li>
+<li>テーマ: 配列の参照渡し（要素を書き換えると呼び出し元に反映）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) { a[1] = 100; }
+int[] a = { 1, 2, 3, 4 };
+foo(a);
+for (int i = 0; i &lt; 4; i++) System.out.print(a[i] + &quot;:&quot;);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;{1,2,3,4} を生成&quot;]
+    B --&gt; C[&quot;foo(a): a[1] = 100&quot;]
+    C --&gt; D[&quot;main 側の a も {1,100,3,4}&quot;]
+    D --&gt; E([出力: 1:100:3:4:])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>a</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>{1,2,3,4}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>{1,100,3,4}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-</td>
+<td><code>1:100:3:4:</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>foo</code> 内の <code>a</code> と <code>main</code> の <code>a</code> は同じインスタンスを参照しています。</p>
+<hr />
+<h2 id="test0816-default-package">Test0816 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0816.java</code></li>
+<li>テーマ: 仮引数と実引数の順序（名前ではなく位置で対応）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static long foo(int x, int y, int v, int w) { return x*y + v + w; }
+int x=2, y=3, v=1, w=0;
+foo(v, w, x, y); // 仮引数 (x,y,v,w) = (1,0,2,3)</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;main: x=2,y=3,v=1,w=0&quot;]
+    B --&gt; C[&quot;foo(v,w,x,y) で渡す&quot;]
+    C --&gt; D[&quot;foo 仮引数: x=1, y=0, v=2, w=3&quot;]
+    D --&gt; E[&quot;x*y + v + w = 0 + 2 + 3 = 5&quot;]
+    E --&gt; F([出力: 5])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>仮引数</th>
+<th>値</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>x</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>y</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>v</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>w</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td>5</td>
+<td>戻り値</td>
+<td>5</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数は宣言の「位置」で対応します。名前が同じだから対応するわけではありません。</p>
+<hr />
+<h2 id="test0817-default-package">Test0817 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0817.java</code></li>
+<li>テーマ: <code>void</code> メソッドでの <code>return</code> 省略。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() {
+    int x = 0;
+    System.out.println(x);
+    // return; は省略可
+}
+for (int i = 0; i &lt; 3; i++) foo();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;i &lt; 3 ?&quot;}
+    B -- Yes --&gt; C[&quot;foo() を呼ぶ → 0&quot;]
+    C --&gt; D[&quot;i++&quot;]
+    D --&gt; B
+    B -- No --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>i</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td><code>0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>void</code> メソッドでは <code>return;</code> を省略できます。</p>
+<hr />
+<h2 id="test0818-default-package">Test0818 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0818.java</code></li>
+<li>テーマ: 引数の個数不一致（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(short s) { System.out.println(s); }
+foo(); // ← short 引数がないのでエラー</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(short) を確認&quot;]
+    B --&gt; C[&quot;foo() を確認&quot;]
+    C --&gt; D{&quot;short 引数は渡されている?&quot;}
+    D -- No --&gt; E[&quot;実引数リスト不一致 → エラー&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>必要な引数</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(short)</code></td>
+<td><code>short</code> 1 個</td>
+<td>定義は有効</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo()</code></td>
+<td>0 個</td>
+<td>個数不一致</td>
+</tr>
+<tr>
+<td>3</td>
+<td>コンパイル</td>
+<td>-</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>メソッド呼び出しでは、仮引数と同じ数・互換型の実引数を渡す必要があります。</p>
+<hr />
+<h2 id="test0819-default-package">Test0819 (default package)</h2>
+<ul>
+<li>対象ファイル: <code>src/Test0819.java</code></li>
+<li>テーマ: <code>if/else</code> でメソッドを使い分け（コメントアウトされた三項演算子と等価）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int foo1() { return 10; }
+static int foo2() { return -20; }
+
+int x = 1, y = 2;
+int z;
+if (x &gt; y) z = foo1(); else z = foo2();
+System.out.print(z); // -20</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;x=1, y=2&quot;]
+    B --&gt; C{&quot;x &gt; y ?&quot;}
+    C -- No --&gt; D[&quot;z = foo2() = -20&quot;]
+    C -- Yes --&gt; E[&quot;z = foo1() = 10&quot;]
+    D --&gt; F([出力: -20])
+    E --&gt; F
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>条件</th>
+<th>呼ばれるメソッド</th>
+<th><code>z</code></th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>1 &gt; 2</code>（偽）</td>
+<td><code>foo2()</code></td>
+<td>-20</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>(x &gt; y) ? foo1() : foo2()</code> という三項演算子でも同じ結果になります。</p>
+<hr />
+<h1 id="2-パッケージ-vol082-のファイル">2. パッケージ <code>vol08_2</code> のファイル</h1>
+<h2 id="vol082-app">vol08_2/App</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/App.java</code></li>
+<li>テーマ: パッケージ単位の動作確認用エントリ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">package vol08_2;
+public class App {
+    public static void main(String[] args) throws Exception {
+        System.out.println(&quot;Hello, World!&quot;);
+    }
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([main 開始]) --&gt; B[&quot;Hello, World! を表示&quot;]
+    B --&gt; C([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>操作</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>文字列を出力</td>
+<td><code>Hello, World!</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>vol08_2</code> パッケージが正しくコンパイル・実行できるかの最小動作確認です。</p>
+<hr />
+<h2 id="vol082-samplearg01">vol08_2/SampleArg01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleArg01.java</code></li>
+<li>テーマ: 引数の拡大変換（<code>byte</code>/<code>short</code>/<code>char</code> → <code>int</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int x) { System.out.println(x); }
+
+byte b = 10;   meth(b);
+short s = 54;  meth(s);
+int i = 400;   meth(i);
+char c = &#x27;A&#x27;;  meth(c);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;meth(b): byte → int に拡大&quot;]
+    B --&gt; C[&quot;meth(s): short → int に拡大&quot;]
+    C --&gt; D[&quot;meth(i): int そのまま&quot;]
+    D --&gt; E[&quot;meth(c): char → int に拡大（&#x27;A&#x27;=65）&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>実引数の型</th>
+<th>値</th>
+<th>拡大後</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>byte</code></td>
+<td>10</td>
+<td>10</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>short</code></td>
+<td>54</td>
+<td>54</td>
+<td><code>54</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>int</code></td>
+<td>400</td>
+<td>400</td>
+<td><code>400</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>char</code></td>
+<td><code>&#x27;A&#x27;</code></td>
+<td>65</td>
+<td><code>65</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>int</code> より小さい整数型と <code>char</code> は、暗黙の拡大変換で <code>int</code> 引数に渡せます。</p>
+<hr />
+<h2 id="vol082-samplearg02">vol08_2/SampleArg02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleArg02.java</code></li>
+<li>テーマ: 引数の縮小変換は明示キャストが必要。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int x) { System.out.println(x); }
+long l = 20L;     meth((int) l);
+float f = 2.3F;   meth((int) f);
+double d = 3.4;   meth((int) d);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;(int) l = 20&quot;]
+    B --&gt; C[&quot;(int) f = 2&quot;]
+    C --&gt; D[&quot;(int) d = 3&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>元の型</th>
+<th>値</th>
+<th>キャスト後</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>long</code></td>
+<td>20</td>
+<td>20</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>float</code></td>
+<td>2.3</td>
+<td>2</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>double</code></td>
+<td>3.4</td>
+<td>3</td>
+<td><code>3</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>int</code> より広い型から <code>int</code> への変換は、<code>(int)</code> を書いて明示します。小数部は切り捨てられます。</p>
+<hr />
+<h2 id="vol082-samplearg03">vol08_2/SampleArg03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleArg03.java</code></li>
+<li>テーマ: 縮小変換の暗黙化は不可（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int x) { ... }
+double d = 3.4;
+meth(d); // double → int は暗黙にできない</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;meth(int) を確認&quot;]
+    B --&gt; C[&quot;meth(d) を確認&quot;]
+    C --&gt; D{&quot;double を int へ暗黙変換できる?&quot;}
+    D -- No --&gt; E([コンパイルエラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>対象</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>meth(int)</code></td>
+<td>定義は有効</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>meth(d)</code></td>
+<td><code>d</code> は <code>double</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>変換</td>
+<td>暗黙不可 → エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>meth((int) d)</code> のように明示的なキャストが必要です。</p>
+<hr />
+<h2 id="vol082-samplecall01">vol08_2/SampleCall01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall01.java</code></li>
+<li>テーマ: 戻り値を文字列連結で表示。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int add(int v, int w) { return v + w; }
+int x = 12, y = 3;
+System.out.println(&quot;x + y = &quot; + add(x, y));</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;add(12, 3) = 15&quot;]
+    B --&gt; C[&quot;文字列連結: \&quot;x + y = \&quot; + 15&quot;]
+    C --&gt; D([出力: x + y = 15])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>add(12,3)</code></td>
+<td>15</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>println</code></td>
+<td>-</td>
+<td><code>x + y = 15</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>戻り値は式の一部としてそのまま使えます。</p>
+<hr />
+<h2 id="vol082-samplecall02">vol08_2/SampleCall02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall02.java</code></li>
+<li>テーマ: 戻り値なし（<code>void</code>）のメソッドを呼ぶ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void add(int v, int w) {
+    System.out.println(&quot;x + y = &quot; + (v + w));
+}
+add(12, 3);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;add(12,3) を呼ぶ&quot;]
+    B --&gt; C[&quot;add 内で 15 を表示&quot;]
+    C --&gt; D([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>add(12,3)</code></td>
+<td><code>x + y = 15</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>void</code> のメソッドは「処理だけ」を実行し、値を返しません。</p>
+<hr />
+<h2 id="vol082-samplecall03">vol08_2/SampleCall03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall03.java</code></li>
+<li>テーマ: 引数なしのメソッド呼び出し。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void showMessage() { System.out.println(&quot;Hello!&quot;); }
+showMessage();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;showMessage() を呼ぶ&quot;]
+    B --&gt; C([出力: Hello!])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>showMessage()</code></td>
+<td><code>Hello!</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数も戻り値もないメソッドは「ただ呼ぶだけ」で動きます。</p>
+<hr />
+<h2 id="vol082-samplecall04">vol08_2/SampleCall04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall04.java</code></li>
+<li>テーマ: 配列を引数で渡して読む。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void printArray(int[] a) {
+    for (int n : a) System.out.println(n);
+}
+int[] array = {10, 20, 30};
+printArray(array);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;int[] array = {10,20,30}&quot;]
+    B --&gt; C[&quot;printArray(array)&quot;]
+    C --&gt; D[&quot;拡張 for で 10,20,30 を順に出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>n</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>20</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>30</td>
+<td><code>30</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>for-each</code> は要素の値を順に取り出します。配列インスタンスは参照で渡ります。</p>
+<hr />
+<h2 id="vol082-samplecall05">vol08_2/SampleCall05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall05.java</code></li>
+<li>テーマ: 配列の要素を書き換える（参照渡し）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int[] a) { a[0] = 1000; }
+int[] array = {10, 20, 30};
+meth(array);
+for (int n : array) System.out.println(n);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;array = {10,20,30}&quot;]
+    B --&gt; C[&quot;meth(array): a[0] = 1000&quot;]
+    C --&gt; D[&quot;array = {1000,20,30}&quot;]
+    D --&gt; E[&quot;全要素を出力&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>array</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>{10,20,30}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>{1000,20,30}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-</td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>-</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>-</td>
+<td><code>30</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>配列の要素を変更すると呼び出し元にも反映されます。</p>
+<hr />
+<h2 id="vol082-samplecall06">vol08_2/SampleCall06</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleCall06.java</code></li>
+<li>テーマ: 配列を戻り値で受け取る。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] createArray() {
+    int[] a = {10, 20, 30};
+    return a;
+}
+int[] b = createArray();
+for (int i = 0; i &lt; b.length; i++) System.out.println(b[i]);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;createArray() を呼ぶ&quot;]
+    B --&gt; C[&quot;内部で {10,20,30} を生成して return&quot;]
+    C --&gt; D[&quot;b にその参照を代入&quot;]
+    D --&gt; E[&quot;b[0], b[1], b[2] を出力&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>b[i]</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>b[0]</code></td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>b[1]</code></td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>b[2]</code></td>
+<td><code>30</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>メソッド内で生成した配列も <code>return</code> で返せば、呼び出し元で使い続けられます。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal01">vol08_2/SampleMethodLocal01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal01.java</code></li>
+<li>テーマ: ローカル変数のスコープ（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() { int x = 100; }
+public static void main(String[] args) {
+    foo();
+    System.out.println(x); // ← main に x はない
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo 内で x を宣言&quot;]
+    B --&gt; C[&quot;main 内で x を参照&quot;]
+    C --&gt; D{&quot;x は main のスコープ?&quot;}
+    D -- No --&gt; E[&quot;シンボルが見つからない → エラー&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo</code></td>
+<td>宣言される（foo の中だけ有効）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main</code></td>
+<td>宣言されていない</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>println(x)</code></td>
+<td>シンボルなし → エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>メソッド内のローカル変数は、そのメソッドの外からは参照できません。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal02">vol08_2/SampleMethodLocal02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal02.java</code></li>
+<li>テーマ: 仮引数の値表示。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { System.out.println(x); }
+int x = 12;
+foo(x); // 12</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;main の x = 12&quot;]
+    B --&gt; C[&quot;foo(12) を呼ぶ&quot;]
+    C --&gt; D[&quot;foo 内 x = 12 を出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>12</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td>12（コピー）</td>
+<td><code>12</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>仮引数も「メソッドの中だけのローカル変数」です。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal03">vol08_2/SampleMethodLocal03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal03.java</code></li>
+<li>テーマ: 値渡しでの書き換えは呼び出し元に影響しない（出力なし）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { x = x * 10; }
+int x = 12;
+foo(x);
+System.out.println(x); // 12</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;main の x = 12&quot;]
+    B --&gt; C[&quot;foo(12): 内部で x = 120&quot;]
+    C --&gt; D[&quot;foo 戻り後、main の x は 12 のまま&quot;]
+    D --&gt; E([出力: 12])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>12</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> 内</td>
+<td>120</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code></td>
+<td>12</td>
+<td><code>12</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>基本型は値渡し。 <code>Test0801</code> と同じ確認ができます。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal04">vol08_2/SampleMethodLocal04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal04.java</code></li>
+<li>テーマ: 戻り値で間接的に値を取り出す。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int foo(int x) {
+    x = x * 10;
+    System.out.println(x);
+    return x;
+}
+int x = 7;
+System.out.println(foo(x)); // 70 を 2 回（内部出力 + 戻り値出力）
+System.out.println(x);      // 7</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(7) を呼ぶ&quot;]
+    B --&gt; C[&quot;foo 内 x=70 を出力&quot;]
+    C --&gt; D[&quot;return 70&quot;]
+    D --&gt; E[&quot;main 側で 70 を出力&quot;]
+    E --&gt; F[&quot;main の x は 7 を出力&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo</code> 内</td>
+<td>70</td>
+<td><code>70</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main</code></td>
+<td>-</td>
+<td><code>70</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code></td>
+<td>7</td>
+<td><code>7</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>呼び出し元と仮引数は別の変数。戻り値で値を「受け取り直す」必要があります。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal05">vol08_2/SampleMethodLocal05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal05.java</code></li>
+<li>テーマ: 配列引数で全要素を出力（参照渡し）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) {
+    for (int i = 0; i &lt; a.length; i++) System.out.println(a[i]);
+}
+int[] a = { 11, 22, 33 };
+foo(a);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;{11,22,33} を生成&quot;]
+    B --&gt; C[&quot;foo(a) を呼ぶ&quot;]
+    C --&gt; D[&quot;要素を順に出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>i</code></th>
+<th><code>a[i]</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>11</td>
+<td><code>11</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>22</td>
+<td><code>22</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>33</td>
+<td><code>33</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>配列インスタンスは <code>foo</code> と <code>main</code> で共有されます（参照渡し）。</p>
+<hr />
+<h2 id="vol082-samplemethodlocal06">vol08_2/SampleMethodLocal06</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleMethodLocal06.java</code></li>
+<li>テーマ: 配列の生成と戻り値。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] foo() {
+    int[] a = {10, 20, 30};
+    return a;
+}
+int[] b = foo();
+for (int i = 0; i &lt; b.length; i++) System.out.println(b[i]);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(): 配列を生成して return&quot;]
+    B --&gt; C[&quot;b にその参照を代入&quot;]
+    C --&gt; D[&quot;b[0..2] を出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>b[i]</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>20</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>30</td>
+<td><code>30</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>SampleCall06</code> と同じパターンで、配列を戻り値で受け取れます。</p>
+<hr />
+<h2 id="vol082-sampleoverload01">vol08_2/SampleOverload01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleOverload01.java</code></li>
+<li>テーマ: 引数の個数違いのオーバーロード（パッケージ版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int add(int v, int w) { return v + w; }
+static int add(int v, int w, int u) { return v + w + u; }
+
+add(12, 3);     // 15
+add(12, 3, 4);  // 19</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;add(12,3) → add(int,int)&quot;]
+    B --&gt; C[&quot;15 を表示&quot;]
+    C --&gt; D[&quot;add(12,3,4) → add(int,int,int)&quot;]
+    D --&gt; E([19 を表示])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>add(12,3)</code></td>
+<td>15</td>
+<td><code>2項足すメソッド:</code> / <code>x + y = 15</code></td>
+</tr>
+<tr>
+<td><code>add(12,3,4)</code></td>
+<td>19</td>
+<td><code>3項足すメソッド:</code> / <code>x + y + z = 19</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/SampleOverload01.java</code> と同じ内容のパッケージ版です。</p>
+<hr />
+<h2 id="vol082-sampleoverload02">vol08_2/SampleOverload02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleOverload02.java</code></li>
+<li>テーマ: 引数名だけ違うのは重複（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int add(int v, int w) { return v + w; }
+static int add(int a, int b) { return a + b; } // ← 重複</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;1 つ目 add(int,int) を登録&quot;]
+    B --&gt; C[&quot;2 つ目 add(int,int) を確認&quot;]
+    C --&gt; D{&quot;シグネチャは違う?&quot;}
+    D -- No --&gt; E[&quot;重複定義エラー&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>シグネチャ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>add(int,int)</code></td>
+<td>登録</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>add(int,int)</code></td>
+<td>重複 → エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>シグネチャは「メソッド名 + 引数の型と順序」。引数名だけを変えても別メソッドにはなりません。</p>
+<hr />
+<h2 id="vol082-samplereturn01">vol08_2/SampleReturn01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleReturn01.java</code></li>
+<li>テーマ: 戻り値の拡大変換（<code>short</code>/<code>byte</code>/<code>char</code> → <code>int</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int foo1() { int x = 1; return x; }
+static int foo2() { short x = 2; return x; }
+static int foo3() { byte x = 3; return x; }
+static int foo4() { char x = &#x27;A&#x27;; return x; }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo1() → 1&quot;]
+    B --&gt; C[&quot;foo2() → 2（short→int 拡大）&quot;]
+    C --&gt; D[&quot;foo3() → 3（byte→int 拡大）&quot;]
+    D --&gt; E[&quot;foo4() → 65（char→int 拡大）&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>戻り値の元の型</th>
+<th>値</th>
+<th>拡大後</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int</code></td>
+<td>1</td>
+<td>1</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>short</code></td>
+<td>2</td>
+<td>2</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>byte</code></td>
+<td>3</td>
+<td>3</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>char</code></td>
+<td><code>&#x27;A&#x27;</code></td>
+<td>65</td>
+<td><code>65</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>戻り値の型が広ければ、<code>return</code> でも自動で拡大変換されます。</p>
+<hr />
+<h2 id="vol082-samplereturn02">vol08_2/SampleReturn02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleReturn02.java</code></li>
+<li>テーマ: 配列・String の戻り値（参照型）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] foo1() { return new int[]{10,20,30}; }
+static String foo2() { return &quot;ABC&quot;; }
+System.out.println(foo1()); // 例: [I@xxxxxxxx
+System.out.println(foo2()); // ABC</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo1() を呼び配列の参照を出力&quot;]
+    B --&gt; C[&quot;println が配列の toString() を呼ぶ&quot;]
+    C --&gt; D[&quot;foo2() を呼び \&quot;ABC\&quot; を出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>戻り値</th>
+<th>出力例</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int[]</code> のインスタンス</td>
+<td><code>[I@1540e19d</code>（ハッシュは環境による）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>&quot;ABC&quot;</code></td>
+<td><code>ABC</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>配列はデフォルトの <code>toString</code> が <code>型@ハッシュ</code> を出力します。String は内容そのものが出力されます。</p>
+<hr />
+<h2 id="vol082-samplereturn03">vol08_2/SampleReturn03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/SampleReturn03.java</code></li>
+<li>テーマ: 参照型の戻り値が <code>null</code>。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int[] foo1() { return null; }
+static String foo2() { return null; }
+System.out.println(foo1()); // null
+System.out.println(foo2()); // null</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo1() → null&quot;]
+    B --&gt; C[&quot;println(null)（int[] バージョン）&quot;]
+    C --&gt; D[&quot;foo2() → null&quot;]
+    D --&gt; E([println(null) で null と表示])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>null</code>（int[]）</td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>null</code>（String）</td>
+<td><code>null</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>参照型は何も指していない状態（null）を返せます。<code>println</code> に <code>null</code> を渡すと文字列 <code>&quot;null&quot;</code> が表示されます。</p>
+<hr />
+<h2 id="vol082-test0801">vol08_2/Test0801</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0801.java</code></li>
+<li>テーマ: 値渡し（パッケージ版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { x *= 10; }
+int x = 1;
+foo(x);
+System.out.print(x); // 1</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;main の x = 1&quot;]
+    B --&gt; C[&quot;foo(1): 内部で x = 10&quot;]
+    C --&gt; D([出力: 1])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code> 内</td>
+<td>10</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main</code></td>
+<td>1</td>
+<td><code>1</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>デフォルトパッケージ版の <code>Test0801</code> と同じ挙動です。</p>
+<hr />
+<h2 id="vol082-test0802">vol08_2/Test0802</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0802.java</code></li>
+<li>テーマ: 同名ローカル変数（パッケージ版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() {
+    int x = 777;
+    System.out.println(x); // 777
+}
+int x = 100;
+foo();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;main の x = 100&quot;]
+    B --&gt; C[&quot;foo() → foo の x = 777 を出力&quot;]
+    C --&gt; D([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>場所</th>
+<th><code>x</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main</code></td>
+<td>100</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td>777</td>
+<td><code>777</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>スコープが違えば同名変数は別物。</p>
+<hr />
+<h2 id="vol082-test0803">vol08_2/Test0803</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0803.java</code></li>
+<li>テーマ: 値渡し（×100）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x) { x = x * 100; }
+int x = 12;
+foo(x);
+System.out.println(x); // 12</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;x = 12&quot;]
+    B --&gt; C[&quot;foo(12): 内部で x = 1200&quot;]
+    C --&gt; D([出力: 12])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>x</code>（main）</th>
+<th><code>x</code>（foo）</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>12</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>12</td>
+<td>1200</td>
+</tr>
+<tr>
+<td>3</td>
+<td>12</td>
+<td>-</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>Test0801</code> と同じく、基本型の値渡しの確認。</p>
+<hr />
+<h2 id="vol082-test0804">vol08_2/Test0804</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0804.java</code></li>
+<li>テーマ: メソッド連鎖（<code>foo</code> から <code>bar</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return x * 2; }
+static int foo(int x) { x = x * 10; return bar(x); }
+int x = 12;
+foo(x);
+System.out.println(foo(x)); // 240</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(12) 1 回目（戻り値捨て）→ 240&quot;]
+    B --&gt; C[&quot;foo(12) 2 回目 → 240&quot;]
+    C --&gt; D([出力: 240])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th><code>foo</code> 内 <code>x</code></th>
+<th><code>bar</code> 戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(12)</code></td>
+<td>120</td>
+<td>240</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>foo(12)</code></td>
+<td>120</td>
+<td>240</td>
+<td><code>240</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>foo</code> を 2 回呼んでも独立に動きます。</p>
+<hr />
+<h2 id="vol082-test0805">vol08_2/Test0805</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0805.java</code></li>
+<li>テーマ: 呼び出し順（A B A）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void bar() { System.out.println(&quot;A&quot;); }
+static void foo() { bar(); System.out.println(&quot;B&quot;); }
+foo(); bar();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() → bar() → A&quot;]
+    B --&gt; C[&quot;foo() → B&quot;]
+    C --&gt; D[&quot;bar() → A&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>順序</th>
+<th>呼ばれたメソッド</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>bar</code>（foo 経由）</td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td><code>B</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bar</code>（直接）</td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0805.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0806">vol08_2/Test0806</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0806.java</code></li>
+<li>テーマ: メソッド引数で <code>x++</code>（後置インクリメント）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return 2 + x; }
+static int foo() {
+    int x = 1;
+    int y = bar(x++); // bar には 1 が渡る。その後 x は 2 になるが return y で捨てられる
+    return y;         // 3
+}
+System.out.println(foo() + bar(1)); // 3 + 3 = 6</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() を呼ぶ&quot;]
+    B --&gt; C[&quot;x=1, bar(x++) → bar(1)=3 を y に代入&quot;]
+    C --&gt; D[&quot;x は 2 になるが使われない、return 3&quot;]
+    D --&gt; E[&quot;bar(1) = 3&quot;]
+    E --&gt; F([出力: 6])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>戻り値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo()</code></td>
+<td>3</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>bar(1)</code></td>
+<td>3</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>println(3+3)</code></td>
+<td>-</td>
+<td><code>6</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>後置 <code>x++</code> は「先に値を取り出してから +1 する」ので、<code>bar</code> には 1 が渡ります。</p>
+<hr />
+<h2 id="vol082-test0807">vol08_2/Test0807</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0807.java</code></li>
+<li>テーマ: <code>static</code> から非 <code>static</code> を呼ぶとエラー（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">int bar(int x) { return 2 + x; } // ← static なし
+static int foo() {
+    int x = 5;
+    x = bar(x); // ← static から非 static を直接呼べない
+    return x;
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;bar はインスタンスメソッド&quot;]
+    B --&gt; C[&quot;foo は static&quot;]
+    C --&gt; D{&quot;インスタンスなしで bar を呼べる?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>対象</th>
+<th>状態</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>bar</code></td>
+<td>static なし</td>
+<td>インスタンスメソッド</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo</code></td>
+<td>static あり</td>
+<td>クラスメソッド</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bar(x)</code></td>
+<td>インスタンス指定なし</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>static</code> メソッドから非 <code>static</code> を呼ぶには <code>new Test0807().bar(x)</code> のようにインスタンスが必要です。</p>
+<hr />
+<h2 id="vol082-test0808">vol08_2/Test0808</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0808.java</code></li>
+<li>テーマ: メソッド呼び出しの入れ子。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(int x) { return 2 * x; }
+static int foo(int x) { return x + 1; }
+System.out.println(bar(foo(1))); // bar(2) = 4</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(1) = 2&quot;]
+    B --&gt; C[&quot;bar(2) = 4&quot;]
+    C --&gt; D([出力: 4])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>戻り値</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(1)</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>bar(2)</code></td>
+<td>4</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数の評価は内側から外側に行います。</p>
+<hr />
+<h2 id="vol082-test0809">vol08_2/Test0809</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0809.java</code></li>
+<li>テーマ: 戻り値の拡大変換。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static double bar(int x) { return x; }
+double d = bar(7);
+System.out.println(d); // 7.0</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;bar(7) を呼ぶ&quot;]
+    B --&gt; C[&quot;return 7（int → double 拡大）&quot;]
+    C --&gt; D([出力: 7.0])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>型</th>
+<th>値</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int</code></td>
+<td>7</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>double</code></td>
+<td>7.0</td>
+<td><code>7.0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0809.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0810">vol08_2/Test0810</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0810.java</code></li>
+<li>テーマ: 縮小変換をキャストなしで渡すとエラー（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int bar(char x) { return x; }
+int x = 65;
+x = bar(x); // ← int → char は暗黙不可</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;bar(char) を確認&quot;]
+    B --&gt; C[&quot;bar(x): x は int&quot;]
+    C --&gt; D{&quot;int → char 暗黙変換可?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>引数</th>
+<th>仮引数</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int x</code></td>
+<td><code>char</code></td>
+<td>縮小変換</td>
+</tr>
+<tr>
+<td>2</td>
+<td>コンパイル</td>
+<td>-</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>bar((char) x)</code> のようにキャストが必要です（<code>src/Test0810.java</code> 参照）。</p>
+<hr />
+<h2 id="vol082-test0811">vol08_2/Test0811</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0811.java</code></li>
+<li>テーマ: 拡大変換（<code>long</code> → <code>float</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void bar(float x) { System.out.println(x); }
+long x = 10;
+bar(x); // 10.0</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;long x = 10&quot;]
+    B --&gt; C[&quot;bar(x): long → float 拡大&quot;]
+    C --&gt; D([出力: 10.0])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>元の型</th>
+<th>値</th>
+<th>拡大後</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>long</code></td>
+<td>10</td>
+<td>10.0f</td>
+<td><code>10.0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>long</code> から <code>float</code> は暗黙の拡大変換（精度が落ちる可能性はある）。</p>
+<hr />
+<h2 id="vol082-test0812">vol08_2/Test0812</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0812.java</code></li>
+<li>テーマ: 引数リストに <code>void</code> は書けない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(void){ ... } // ← void は仮引数にはできない</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo の引数リストを読む&quot;]
+    B --&gt; C[&quot;(void) と書かれている&quot;]
+    C --&gt; D{&quot;Java の仮引数として有効?&quot;}
+    D -- No --&gt; E([構文エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>記述</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>static void</code></td>
+<td>戻り値型として有効</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>(void)</code></td>
+<td>仮引数として無効</td>
+</tr>
+<tr>
+<td>3</td>
+<td>コンパイル</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数なしのメソッドは <code>foo()</code> と書きます（<code>vol08_2/Test0812</code> 参照）。</p>
+<hr />
+<h2 id="vol082-test0813">vol08_2/Test0813</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0813.java</code></li>
+<li>テーマ: <code>byte</code> 戻り値と複合代入（パッケージ版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static byte foo() {
+    byte b = 1;
+    b += 1;
+    return b;
+}
+System.out.print(foo()); // 2</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(): b=1 → b+=1 → 2&quot;]
+    B --&gt; C([出力: 2])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>b</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-</td>
+<td><code>2</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0813.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0814">vol08_2/Test0814</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0814.java</code></li>
+<li>テーマ: 配列の初期値と出力。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) {
+    for (int x : a) System.out.println(x);
+}
+int[] a = new int[3];
+for (int i = 0; i &lt; a.length; i++) a[i] = a[i] + 10;
+foo(a);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;int[3] = {0,0,0}&quot;]
+    B --&gt; C[&quot;全要素 +10 → {10,10,10}&quot;]
+    C --&gt; D[&quot;foo(a) で順に出力&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>a</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>{0,0,0}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>{10,10,10}</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3-5</td>
+<td>-</td>
+<td><code>10</code> x3</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0814.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0815">vol08_2/Test0815</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0815.java</code></li>
+<li>テーマ: 配列要素の更新（参照渡し）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] a) { a[1] = 100; }
+int[] a = { 1, 2, 3, 4 };
+foo(a);
+for (int i = 0; i &lt; 4; i++) System.out.print(a[i] + &quot;:&quot;); // 1:100:3:4:</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;a = {1,2,3,4}&quot;]
+    B --&gt; C[&quot;foo(a): a[1] = 100&quot;]
+    C --&gt; D[&quot;a = {1,100,3,4}&quot;]
+    D --&gt; E([出力: 1:100:3:4:])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th><code>a</code></th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>{1,2,3,4}</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>{1,100,3,4}</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0815.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0816">vol08_2/Test0816</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0816.java</code></li>
+<li>テーマ: 仮引数の順序（パッケージ版）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static long foo(int x, int y, int v, int w) { return x*y + v + w; }
+int x=2, y=3, v=1, w=0;
+foo(v, w, x, y); // → 仮引数 (x,y,v,w) = (1,0,2,3) → 5</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo(v,w,x,y) を渡す&quot;]
+    B --&gt; C[&quot;仮引数: x=1, y=0, v=2, w=3&quot;]
+    C --&gt; D[&quot;1*0 + 2 + 3 = 5&quot;]
+    D --&gt; E([出力: 5])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>仮引数</th>
+<th>値</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>v</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>w</code></td>
+<td>3</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0816.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0817">vol08_2/Test0817</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0817.java</code></li>
+<li>テーマ: <code>void</code> メソッドでの <code>return;</code>。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo() {
+    int x = 0;
+    System.out.println(x);
+    return; // 書いてもよい
+}
+for (int i = 0; i &lt; 3; i++) foo();</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;i &lt; 3?&quot;}
+    B -- Yes --&gt; C[&quot;foo() → 0&quot;]
+    C --&gt; D[&quot;i++&quot;]
+    D --&gt; B
+    B -- No --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th><code>i</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>void</code> メソッドの <code>return;</code> は省略可能ですが、明示しても問題ありません。</p>
+<hr />
+<h2 id="vol082-test0818">vol08_2/Test0818</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0818.java</code></li>
+<li>テーマ: 引数不足（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(short s) { ... }
+foo(); // ← short が渡されていない</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(short) を確認&quot;]
+    B --&gt; C[&quot;foo() を確認&quot;]
+    C --&gt; D{&quot;short 引数あり?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>必要</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td><code>short</code> 1 個</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>src/Test0818.java</code> と同じ。</p>
+<hr />
+<h2 id="vol082-test0819">vol08_2/Test0819</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_2/Test0819.java</code></li>
+<li>テーマ: 三項演算子でのメソッド選択。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int foo1() { return 10; }
+static int foo2() { return -20; }
+int x = 1, y = 2;
+int z = (x &gt; y) ? foo1() : foo2();
+System.out.print(z); // -20</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;x &gt; y ?&quot;}
+    B -- Yes --&gt; C[&quot;z = foo1() = 10&quot;]
+    B -- No --&gt; D[&quot;z = foo2() = -20&quot;]
+    C --&gt; E([出力])
+    D --&gt; E
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>条件</th>
+<th>呼ばれる</th>
+<th><code>z</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>偽</td>
+<td><code>foo2()</code></td>
+<td>-20</td>
+<td><code>-20</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>?:</code> を使うと <code>if/else</code> 相当の値選択を 1 行で書けます。</p>
+<hr />
+<h1 id="3-パッケージ-vol083-のファイル">3. パッケージ <code>vol08_3</code> のファイル</h1>
+<h2 id="vol083-samplemainmethod01">vol08_3/SampleMainMethod01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod01.java</code></li>
+<li>テーマ: 標準的な <code>main</code> メソッドの形。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) {
+    System.out.println(&quot;Hello&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;public static void main(String[]) を探す&quot;]
+    B --&gt; C[&quot;見つかったので実行&quot;]
+    C --&gt; D([出力: Hello])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>操作</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>JVM が <code>main</code> を呼ぶ</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>println</code></td>
+<td><code>Hello</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>public static void main(String[] args)</code> が JVM の起動エントリです。</p>
+<hr />
+<h2 id="vol083-samplemainmethod02">vol08_3/SampleMainMethod02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod02.java</code></li>
+<li>テーマ: <code>public</code> がない <code>main</code> は起動できない（実行時エラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void main(String[] args) { // ← public がない
+    System.out.println(&quot;Hello&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;public static void main(String[]) を探す&quot;]
+    B --&gt; C{&quot;見つかった?&quot;}
+    C -- No --&gt; D([起動エラー: main がない])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>内容</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>コンパイル</td>
+<td>成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>java</code> 実行</td>
+<td><code>main</code> メソッドが見つかりません</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>JVM は <code>public static void main(String[])</code> を探します。<code>public</code> がないと起動エントリとは認識されません。</p>
+<hr />
+<h2 id="vol083-samplemainmethod03">vol08_3/SampleMainMethod03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod03.java</code></li>
+<li>テーマ: <code>static</code> がない <code>main</code>（実行時エラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public void main(String[] args) { // ← static がない
+    System.out.println(&quot;Hello&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;静的な main を探す&quot;]
+    B --&gt; C{&quot;static の main がある?&quot;}
+    C -- No --&gt; D([起動エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>コンパイル成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td>実行時に <code>main</code> が見つからない</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>static</code> がない <code>main</code> はインスタンスメソッドになり、JVM は呼べません。</p>
+<hr />
+<h2 id="vol083-samplemainmethod04">vol08_3/SampleMainMethod04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod04.java</code></li>
+<li>テーマ: 戻り値が <code>int</code> の <code>main</code>（実行時エラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public int main(String[] args) { // ← void でない
+    return 1;
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;public static void main(String[]) を探す&quot;]
+    B --&gt; C{&quot;void で見つかる?&quot;}
+    C -- No --&gt; D([起動エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>コンパイル成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td>JVM が <code>main</code> を見つけられない</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> の戻り値型は <code>void</code> です。</p>
+<hr />
+<h2 id="vol083-samplemainmethod05">vol08_3/SampleMainMethod05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod05.java</code></li>
+<li>テーマ: <code>main(int x)</code> は別メソッド（オーバーロード）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(int x) { System.out.println(&quot;Hello&quot;); }
+public static void main(String[] args) { main(5); }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を実行&quot;]
+    B --&gt; C[&quot;main(5) を呼ぶ&quot;]
+    C --&gt; D([出力: Hello])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼ばれる main</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main(String[])</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main(int)</code></td>
+<td><code>Hello</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> という名前でもシグネチャが違えばオーバーロード可能です。JVM が呼ぶのはあくまで <code>main(String[])</code>。</p>
+<hr />
+<h2 id="vol083-samplemainmethod06">vol08_3/SampleMainMethod06</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleMainMethod06.java</code></li>
+<li>テーマ: <code>main()</code>（引数なし）は別メソッド。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main() { System.out.println(&quot;Hello&quot;); }
+public static void main(String[] args) { main(); }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を呼ぶ&quot;]
+    B --&gt; C[&quot;main() を呼ぶ&quot;]
+    C --&gt; D([出力: Hello])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼ばれる main</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main(String[])</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main()</code></td>
+<td><code>Hello</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>JVM のエントリは <code>main(String[])</code>。引数なしの <code>main()</code> は内部から呼べる別メソッドです。</p>
+<hr />
+<h2 id="vol083-samplestaticmethod01">vol08_3/SampleStaticMethod01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleStaticMethod01.java</code></li>
+<li>テーマ: <code>static</code> から非 <code>static</code> を呼べない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static int getMaxvalue(int i, int j) { ... }
+void foo() { } // ← 非 static
+public static void main(String[] args) {
+    foo();                   // ← エラー
+    int ret = getMaxvalue(1, 3); // OK
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo は非 static&quot;]
+    B --&gt; C[&quot;main は static&quot;]
+    C --&gt; D{&quot;インスタンスなしで foo を呼べる?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼び出し</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo()</code></td>
+<td>エラー（インスタンスなし）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>getMaxvalue(1,3)</code></td>
+<td>OK（static）</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>非 <code>static</code> メソッドは <code>new SampleStaticMethod01().foo()</code> のようにインスタンス経由で呼びます。</p>
+<hr />
+<h2 id="vol083-samplecalloverload01">vol08_3/SampleCallOverload01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleCallOverload01.java</code></li>
+<li>テーマ: 拡大変換を含むオーバーロード解決。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int i)    { ... }
+static void meth(double d) { ... }
+
+meth(b);  // byte → int
+meth(s);  // short → int
+meth(i);  // int
+meth(l);  // long → double
+meth(f);  // float → double
+meth(d);  // double
+meth(c);  // char → int</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;int で受けられる?&quot;}
+    B -- Yes --&gt; C[&quot;meth(int) を選択&quot;]
+    B -- No --&gt; D{&quot;double で受けられる?&quot;}
+    D -- Yes --&gt; E[&quot;meth(double) を選択&quot;]
+    D -- No --&gt; F([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれるメソッド</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>meth(b)</code> (byte)</td>
+<td><code>meth(int)</code></td>
+<td><code>meth(int)が呼び出されました。</code></td>
+</tr>
+<tr>
+<td><code>meth(s)</code> (short)</td>
+<td><code>meth(int)</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>meth(i)</code> (int)</td>
+<td><code>meth(int)</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>meth(l)</code> (long)</td>
+<td><code>meth(double)</code></td>
+<td><code>meth(double)が呼び出されました。</code></td>
+</tr>
+<tr>
+<td><code>meth(f)</code> (float)</td>
+<td><code>meth(double)</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>meth(d)</code> (double)</td>
+<td><code>meth(double)</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>meth(c)</code> (char)</td>
+<td><code>meth(int)</code></td>
+<td><code>meth(int)が呼び出されました。</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>候補が複数あるとき、コンパイラは「最も型変換が少ない（最も狭い変換で済む）候補」を選びます。</p>
+<hr />
+<h2 id="vol083-samplecalloverload02">vol08_3/SampleCallOverload02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleCallOverload02.java</code></li>
+<li>テーマ: <code>int</code> は <code>short</code> に暗黙縮小されない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(int i, int j) { ... }
+static void meth(short s) { ... }
+
+meth(i1, i2); // OK
+meth(i1);     // ← int を short 引数に暗黙渡しできない → エラー
+meth(s1, s2); // short → int で OK
+meth(s1);     // short にぴったり</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;候補 meth(int,int) と meth(short)&quot;]
+    B --&gt; C[&quot;meth(i1) を検査&quot;]
+    C --&gt; D{&quot;int → short 暗黙変換可?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>適用可能候補</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>meth(i1, i2)</code></td>
+<td><code>meth(int,int)</code></td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>meth(i1)</code></td>
+<td>なし（<code>short</code> に暗黙縮小不可）</td>
+<td>エラー</td>
+</tr>
+<tr>
+<td><code>meth(s1, s2)</code></td>
+<td><code>meth(int,int)</code>（拡大）</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>meth(s1)</code></td>
+<td><code>meth(short)</code>（ぴったり）</td>
+<td>OK</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>short</code> → <code>int</code> は OK ですが、<code>int</code> → <code>short</code> は暗黙にはできません。</p>
+<hr />
+<h2 id="vol083-samplecalloverload03">vol08_3/SampleCallOverload03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleCallOverload03.java</code></li>
+<li>テーマ: 同程度に一致する候補で曖昧エラー（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void meth(short x, int y) { ... }
+static void meth(int x, short y) { ... }
+byte b1 = 1, b2 = 2;
+meth(b1, b2); // ← どちらも同程度に一致</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;meth(short,int) と meth(int,short) を確認&quot;]
+    B --&gt; C{&quot;より具体的な候補は決まる?&quot;}
+    C -- No --&gt; D([曖昧エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>候補</th>
+<th>byte → 第1引数</th>
+<th>byte → 第2引数</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>meth(short,int)</code></td>
+<td>byte→short（拡大）</td>
+<td>byte→int（拡大）</td>
+<td>適用可</td>
+</tr>
+<tr>
+<td><code>meth(int,short)</code></td>
+<td>byte→int（拡大）</td>
+<td>byte→short（拡大）</td>
+<td>適用可</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>-</td>
+<td>-</td>
+<td>どちらも同程度 → エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>複数候補が同程度に一致すると、コンパイラは選べません（reference is ambiguous）。</p>
+<hr />
+<h2 id="vol083-samplecommargs">vol08_3/SampleCommArgs</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleCommArgs.java</code></li>
+<li>テーマ: コマンドライン引数の 1 番目を表示。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) {
+    System.out.println(&quot;args[0] = &quot; + args[0]);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([java SampleCommArgs hello]) --&gt; B[&quot;args = {\&quot;hello\&quot;}&quot;]
+    B --&gt; C([出力: args[0] = hello])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動コマンド</th>
+<th><code>args</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java vol08_3.SampleCommArgs hello</code></td>
+<td><code>{&quot;hello&quot;}</code></td>
+<td><code>args[0] = hello</code></td>
+</tr>
+<tr>
+<td><code>java vol08_3.SampleCommArgs</code>（引数なし）</td>
+<td><code>{}</code></td>
+<td><code>ArrayIndexOutOfBoundsException</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>args</code> には起動時のコマンドライン引数が <code>String[]</code> で渡ります。</p>
+<hr />
+<h2 id="vol083-samplecommargs2">vol08_3/SampleCommArgs2</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleCommArgs2.java</code></li>
+<li>テーマ: 引数の個数を表示。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) { System.out.println(args.length); }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([java 起動]) --&gt; B[&quot;args.length を出力&quot;]
+    B --&gt; C([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動コマンド</th>
+<th><code>args.length</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A B C</code></td>
+<td>3</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td>0</td>
+<td><code>0</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>args.length</code> で渡された引数の個数を確認できます。</p>
+<hr />
+<h2 id="vol083-samplevararg01">vol08_3/SampleVarArg01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArg01.java</code></li>
+<li>テーマ: 可変長引数の基本（個数 0 以上）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) { System.out.println(&quot;foo(int...)の呼び出し&quot;); }
+foo();
+foo(x);
+foo(x, y);
+foo(x, y, z);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() を 0 個で呼ぶ&quot;]
+    B --&gt; C[&quot;foo(x) を 1 個で呼ぶ&quot;]
+    C --&gt; D[&quot;foo(x,y) を 2 個で呼ぶ&quot;]
+    D --&gt; E[&quot;foo(x,y,z) を 3 個で呼ぶ&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>渡される個数</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td>0</td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td>1</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td>2</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td>3</td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数は「0 個以上」を受け取れます。</p>
+<hr />
+<h2 id="vol083-samplevararg02">vol08_3/SampleVarArg02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArg02.java</code></li>
+<li>テーマ: 可変長引数の前にある通常引数は省略不可（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(double d, int... x) { ... }
+foo();        // ← double 省略不可 → エラー
+foo(x);       // int を double に拡大 → OK だが上記がエラーで止まる</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(double, int...) を確認&quot;]
+    B --&gt; C[&quot;foo() を確認&quot;]
+    C --&gt; D{&quot;double 引数は渡されている?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th><code>double d</code></th>
+<th><code>int... x</code></th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td>なし</td>
+<td>0 個扱い可</td>
+<td>エラー</td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td><code>int→double</code> 拡大</td>
+<td>0 個</td>
+<td>単独なら可</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数は省略できますが、その前の通常引数は省略できません。</p>
+<hr />
+<h2 id="vol083-samplevararg03">vol08_3/SampleVarArg03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArg03.java</code></li>
+<li>テーマ: 可変長引数を配列として扱う（<code>x.length</code>）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) {
+    System.out.println(&quot;var-arg で受け取った引数の数 =&quot; + x.length);
+}
+foo(); foo(x); foo(x,y); foo(x,y,z);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() を呼ぶ → x.length = 0&quot;]
+    B --&gt; C[&quot;foo(x) → 1&quot;]
+    C --&gt; D[&quot;foo(x,y) → 2&quot;]
+    D --&gt; E[&quot;foo(x,y,z) → 3&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th><code>x.length</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td>0</td>
+<td><code>var-arg で受け取った引数の数 =0</code></td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td>1</td>
+<td><code>... =1</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td>2</td>
+<td><code>... =2</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td>3</td>
+<td><code>... =3</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数は実体としては配列で渡るため、<code>.length</code> で個数を取得できます。</p>
+<hr />
+<h2 id="vol083-samplevararg04">vol08_3/SampleVarArg04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArg04.java</code></li>
+<li>テーマ: 可変長引数を <code>for-each</code> で展開。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) {
+    for (int i : x) System.out.print(i + &quot; &quot;);
+    System.out.println();
+}
+foo(); foo(x); foo(x,y); foo(x,y,z);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo()（空配列）&quot;]
+    B --&gt; C[&quot;foo(x): 10&quot;]
+    C --&gt; D[&quot;foo(x,y): 10 20&quot;]
+    D --&gt; E[&quot;foo(x,y,z): 10 20 30&quot;]
+    E --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td>（空行のみ）</td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td><code>10 </code></td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td><code>10 20 </code></td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td><code>10 20 30 </code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数を配列として <code>for-each</code> で順に処理できます。</p>
+<hr />
+<h2 id="vol083-samplevararg05">vol08_3/SampleVarArg05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArg05.java</code></li>
+<li>テーマ: <code>main</code> の引数を <code>String...</code> で書く（<code>String[] args</code> と同等）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String... args) {
+    for (String a : args) System.out.println(a);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;args は String 配列として受ける&quot;]
+    B --&gt; C[&quot;要素を順に出力&quot;]
+    C --&gt; D([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動コマンド</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A B</code></td>
+<td><code>A</code> / <code>B</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td>（何も出力されない）</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> の引数は <code>String[]</code> でも <code>String...</code> でも書けます。JVM の起動エントリとしての扱いは同じです。</p>
+<hr />
+<h2 id="vol083-samplevarargoverride01">vol08_3/SampleVarArgOverride01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArgOverride01.java</code></li>
+<li>テーマ: 引数名だけ違う可変長引数は重複（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... i) { ... }
+static void foo(int... j) { ... } // ← 重複</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int...) を登録&quot;]
+    B --&gt; C[&quot;別の foo(int...) を確認&quot;]
+    C --&gt; D{&quot;シグネチャは違う?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>シグネチャ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(int...)</code></td>
+<td>登録</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo(int...)</code></td>
+<td>重複</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数でも引数名はシグネチャに含まれません。</p>
+<hr />
+<h2 id="vol083-samplevarargoverride02">vol08_3/SampleVarArgOverride02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArgOverride02.java</code></li>
+<li>テーマ: <code>int...</code> と <code>int[]</code> は同じシグネチャ扱い（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... i) { ... }
+static void foo(int[] j) { ... }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int...) を確認&quot;]
+    B --&gt; C[&quot;foo(int[]) を確認&quot;]
+    C --&gt; D{&quot;別シグネチャ?&quot;}
+    D -- No --&gt; E([重複定義エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>シグネチャ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int...</code></td>
+<td><code>int[]</code> として扱う</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>int[]</code></td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>結果</td>
+<td>エラー</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数はバイトコード上は配列。<code>int...</code> と <code>int[]</code> は同居できません。</p>
+<hr />
+<h2 id="vol083-samplevarargoverride03">vol08_3/SampleVarArgOverride03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArgOverride03.java</code></li>
+<li>テーマ: 可変長引数とより具体的なメソッドの優先度。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) { System.out.println(&quot;foo(int...)の呼び出し&quot;); }
+static void foo(int i)    { System.out.println(&quot;foo(int)の呼び出し&quot;); }
+foo();       // 候補は foo(int...) のみ
+foo(x);      // foo(int) を優先
+foo(x, y);   // foo(int...) を選ぶ
+foo(x, y, z);// 同上</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;引数 1 個で int に一致?&quot;}
+    B -- Yes --&gt; C[&quot;foo(int) を優先&quot;]
+    B -- No --&gt; D[&quot;foo(int...) を選ぶ&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td><code>foo(int)</code></td>
+<td><code>foo(int)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td><code>foo(int...)</code></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>ぴったり 1 個渡せる場合は、より具体的な通常引数版が優先されます。</p>
+<hr />
+<h2 id="vol083-samplevarargoverride04">vol08_3/SampleVarArgOverride04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArgOverride04.java</code></li>
+<li>テーマ: 可変長引数 vs 拡大変換を要する非可変長引数。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) { ... }
+static void foo(short s)  { ... }
+byte x = 10, y = 20, z = 30;
+foo();        // foo(int...)
+foo(x);       // foo(short) を優先（byte→short 拡大が小さい）
+foo(x, y);    // foo(int...) のみ可能
+foo(x, y, z); // foo(int...) のみ可能</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;1 個? 0 個? 複数?&quot;}
+    B -- 0 個 --&gt; C[&quot;foo(int...)&quot;]
+    B -- 1 個 --&gt; D{&quot;short で受けられる?&quot;}
+    D -- Yes --&gt; E[&quot;foo(short) を優先&quot;]
+    B -- 複数 --&gt; F[&quot;foo(int...)&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td><code>foo(short)</code></td>
+<td><code>foo(short)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td><code>foo(int...)</code></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>オーバーロード解決は「通常引数で適用できる候補があれば優先」「次にメソッド呼び出し変換」「最後に可変長引数」の順で行います。</p>
+<hr />
+<h2 id="vol083-samplevarargoverride05">vol08_3/SampleVarArgOverride05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/SampleVarArgOverride05.java</code></li>
+<li>テーマ: 可変長引数 vs 2 引数版。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x)         { ... }
+static void foo(short x, short y) { ... }
+short x = 10, y = 20, z = 30;
+foo();       // foo(int...)
+foo(x);      // foo(int...)（short 1 個に該当する候補なし）
+foo(x, y);   // foo(short, short) を優先
+foo(x, y, z);// foo(int...)</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;引数 2 個 で short, short?&quot;}
+    B -- Yes --&gt; C[&quot;foo(short,short)&quot;]
+    B -- No --&gt; D[&quot;foo(int...)&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x)</code></td>
+<td><code>foo(int...)</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>foo(x,y)</code></td>
+<td><code>foo(short,short)</code></td>
+<td><code>foo(short, short)の呼び出し</code></td>
+</tr>
+<tr>
+<td><code>foo(x,y,z)</code></td>
+<td><code>foo(int...)</code></td>
+<td><code>foo(int...)の呼び出し</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>通常引数の数とぴったり合う候補があれば、可変長版より優先されます。</p>
+<hr />
+<h2 id="vol083-test1">vol08_3/Test1</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test1.java</code></li>
+<li>テーマ: オーバーロード解決（<code>byte → short</code> の方が <code>byte → float</code> より狭い）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(float x) { System.out.println(&quot;A&quot;); }
+static void foo(short x) { System.out.println(&quot;B&quot;); }
+byte b = 5;
+foo(b);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;候補 foo(float), foo(short)&quot;]
+    B --&gt; C{&quot;より狭い拡大変換は?&quot;}
+    C --&gt; D[&quot;byte→short の方が狭い&quot;]
+    D --&gt; E([出力: B])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>候補</th>
+<th>必要な変換</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(float)</code></td>
+<td>byte→float</td>
+<td>広い</td>
+</tr>
+<tr>
+<td><code>foo(short)</code></td>
+<td>byte→short</td>
+<td>狭い → 選ばれる</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>候補が複数ある場合、より狭い拡大変換で済む方が優先されます。</p>
+<hr />
+<h2 id="vol083-test2">vol08_3/Test2</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test2.java</code></li>
+<li>テーマ: <code>int</code> → <code>long</code> vs <code>int</code> → <code>float</code>（<code>long</code> の方が情報損失が少ない）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(long x)  { System.out.println(&quot;A&quot;); }
+static void foo(float x) { System.out.println(&quot;B&quot;); }
+int x = 5;
+foo(x);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;候補 foo(long), foo(float)&quot;]
+    B --&gt; C{&quot;より狭い変換は?&quot;}
+    C --&gt; D[&quot;int→long を選ぶ&quot;]
+    D --&gt; E([出力: A])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>候補</th>
+<th>必要な変換</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(long)</code></td>
+<td>int→long（同じ整数の拡大）</td>
+<td>選ばれる</td>
+</tr>
+<tr>
+<td><code>foo(float)</code></td>
+<td>int→float</td>
+<td>候補だが優先度低</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>整数 → 整数の拡大は、整数 → 浮動小数の拡大より「狭い」変換と扱われます。</p>
+<hr />
+<h2 id="vol083-test3">vol08_3/Test3</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test3.java</code></li>
+<li>テーマ: 引数名だけ違うオーバーロード（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x, int y) { ... }
+static void foo(int a, int b) { ... } // 重複</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int,int) を登録&quot;]
+    B --&gt; C[&quot;別の foo(int,int) を確認&quot;]
+    C --&gt; D{&quot;型か個数が違う?&quot;}
+    D -- No --&gt; E([重複エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>シグネチャ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>foo(int,int)</code></td>
+<td>登録</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>foo(int,int)</code></td>
+<td>重複</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数名はシグネチャの一部ではありません。</p>
+<hr />
+<h2 id="vol083-test4">vol08_3/Test4</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test4.java</code></li>
+<li>テーマ: 明示キャストでオーバーロード解決を制御。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(char x)   { System.out.println(&quot;A&quot;); }
+static void foo(int x)    { System.out.println(&quot;B&quot;); }
+static void foo(double x) { System.out.println(&quot;C&quot;); }
+double d = 2.3D;
+foo((short) d); // short → int に拡大 → foo(int)</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;(short) d で d を short にキャスト&quot;]
+    B --&gt; C[&quot;short→int への拡大が可能&quot;]
+    C --&gt; D[&quot;foo(int) を選ぶ&quot;]
+    D --&gt; E([出力: B])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>値</th>
+<th>型</th>
+<th>選ばれるメソッド</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2.3</td>
+<td><code>double</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td><code>short</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td><code>int</code>（拡大）</td>
+<td><code>foo(int)</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>キャストでオーバーロード解決を意図的に変えられます。</p>
+<hr />
+<h2 id="vol083-test5">vol08_3/Test5</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test5.java</code></li>
+<li>テーマ: 配列型は要素の拡大変換ができない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] x)   { ... }
+static void foo(float[] x) { ... }
+byte[] x = new byte[10];
+foo(x); // ← byte[] は int[]/float[] のいずれにも渡せない</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int[]), foo(float[]) を確認&quot;]
+    B --&gt; C[&quot;byte[] を渡す&quot;]
+    C --&gt; D{&quot;配列型は互換?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>実引数</th>
+<th>候補</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>byte[]</code></td>
+<td><code>int[]</code></td>
+<td>配列型が違う</td>
+</tr>
+<tr>
+<td><code>byte[]</code></td>
+<td><code>float[]</code></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>要素型の拡大変換は配列型には適用されません。</p>
+<hr />
+<h2 id="vol083-test6">vol08_3/Test6</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test6.java</code></li>
+<li>テーマ: <code>String[]</code> と <code>String</code> のオーバーロード。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(String[] x) { System.out.println(&quot;A&quot;); }
+static void foo(String x)   { System.out.println(&quot;B&quot;); }
+String x = &quot;XYZ&quot;;
+foo(x);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;x は String&quot;]
+    B --&gt; C[&quot;foo(String) を選ぶ&quot;]
+    C --&gt; D([出力: B])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>実引数</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>String x</code></td>
+<td><code>foo(String)</code></td>
+<td><code>B</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>String</code> と <code>String[]</code> はまったく別の型です。</p>
+<hr />
+<h2 id="vol083-test7">vol08_3/Test7</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test7.java</code></li>
+<li>テーマ: 配列要素を 2 つ渡して 2 引数版を呼ぶ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] x)        { System.out.println(&quot;A&quot;); }
+static void foo(int x)          { System.out.println(&quot;B&quot;); }
+static void foo(int x, int y)   { System.out.println(&quot;C&quot;); }
+int[] x = {10, 20, 30};
+foo(x[1], x[2]); // 2 引数 → C</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;x[1], x[2] は int 2 個&quot;]
+    B --&gt; C[&quot;foo(int,int) を選ぶ&quot;]
+    C --&gt; D([出力: C])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>実引数</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>int, int</code></td>
+<td><code>foo(int,int)</code></td>
+<td><code>C</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>x[1]</code>, <code>x[2]</code> は要素の値（<code>int</code>）なので、<code>foo(int,int)</code> に渡ります。</p>
+<hr />
+<h2 id="vol083-test8">vol08_3/Test8</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test8.java</code></li>
+<li>テーマ: 引数の個数と拡大変換を組み合わせて選ぶ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x)               { System.out.println(&quot;A&quot;); }
+static void foo(int x, int y)        { System.out.println(&quot;B&quot;); }
+static void foo(int x, int y, int z) { System.out.println(&quot;C&quot;); }
+byte b = 10; int i = 10;
+foo(i, i); // → B
+foo(b);    // byte→int 拡大 → A</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;引数 2 個 → foo(int,int) = B&quot;]
+    B --&gt; C[&quot;引数 1 個 → byte→int で foo(int) = A&quot;]
+    C --&gt; D([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(i, i)</code></td>
+<td><code>foo(int,int)</code></td>
+<td><code>B</code></td>
+</tr>
+<tr>
+<td><code>foo(b)</code></td>
+<td><code>foo(int)</code>（拡大）</td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>個数が一致する候補が優先され、不足する型は拡大変換で合わせます。</p>
+<hr />
+<h2 id="vol083-test9">vol08_3/Test9</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test9.java</code></li>
+<li>テーマ: 戻り値や修飾子だけ違っても重複（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">class MyClass {
+    int    method(int i) { ... }   // 基準
+    void   method()      { ... }   // 引数が違う → OK
+    int    method(double d){ ... } // 引数が違う → OK
+    double method(int x) { ... }   // ← 戻り値だけ違う → 重複
+    public int method(int y){ ... }// ← 修飾子+引数名違いは無意味 → 重複
+    static int method(int i, int j) { ... } // 引数個数違い → OK
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;method(int) を登録&quot;]
+    B --&gt; C[&quot;double method(int) を確認&quot;]
+    C --&gt; D{&quot;戻り値だけ違う?&quot;}
+    D -- Yes --&gt; E([重複エラー])
+    E --&gt; F[&quot;public int method(int) も重複&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>定義</th>
+<th>違い</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>int method(int i)</code></td>
+<td>基準</td>
+<td>登録</td>
+</tr>
+<tr>
+<td><code>void method()</code></td>
+<td>引数個数</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>int method(double)</code></td>
+<td>引数型</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>double method(int x)</code></td>
+<td>戻り値のみ</td>
+<td>重複</td>
+</tr>
+<tr>
+<td><code>public int method(int y)</code></td>
+<td>修飾子+引数名</td>
+<td>重複</td>
+</tr>
+<tr>
+<td><code>static int method(int, int)</code></td>
+<td>引数個数</td>
+<td>OK</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>シグネチャは「メソッド名 + 仮引数の型と順序」だけ。戻り値型や修飾子は区別の対象になりません。</p>
+<hr />
+<h2 id="vol083-test10">vol08_3/Test10</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test10.java</code></li>
+<li>テーマ: 引数名だけ違うオーバーロード（コンパイルエラー教材、<code>Test3</code> と同パターン）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void add(int x, int y) { ... }
+static void add(int i, int j) { ... }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;add(int,int) を 2 つ確認&quot;]
+    B --&gt; C{&quot;シグネチャは違う?&quot;}
+    C -- No --&gt; D([重複エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>シグネチャ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>add(int,int)</code></td>
+<td>登録</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>add(int,int)</code></td>
+<td>重複</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>vol08_3/Test3</code> と同じ。</p>
+<hr />
+<h2 id="vol083-test11">vol08_3/Test11</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test11.java</code></li>
+<li>テーマ: <code>float</code> を <code>int</code> か <code>double</code> のどちらに渡すか。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x)    { System.out.println(&quot;foo(int)&quot;); }
+static void foo(double d) { System.out.println(&quot;foo(double)&quot;); }
+float f = 7.7f;
+foo(f); // float → double の方が自然な拡大変換</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;float → int 暗黙可?&quot;}
+    B -- No --&gt; C[&quot;foo(double) を選ぶ&quot;]
+    C --&gt; D([出力: foo(double)])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>候補</th>
+<th>必要な変換</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(int)</code></td>
+<td>float → int（縮小）</td>
+<td>暗黙不可</td>
+</tr>
+<tr>
+<td><code>foo(double)</code></td>
+<td>float → double（拡大）</td>
+<td>OK → 選ばれる</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>縮小変換が必要な候補は対象外。<code>foo(double)</code> だけが適用可能です。</p>
+<hr />
+<h2 id="vol083-test12">vol08_3/Test12</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test12.java</code></li>
+<li>テーマ: <code>byte</code>/<code>byte</code> の引数で <code>foo(int,short)</code> と <code>foo(int,int)</code> を選ぶ。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x, short s) { System.out.println(&quot;foo(int, short)&quot;); }
+static void foo(int a, int b)   { System.out.println(&quot;foo(int, int)&quot;); }
+byte b1 = 10, b2 = 20;
+foo(b1, b2);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;候補: foo(int,short), foo(int,int)&quot;]
+    B --&gt; C{&quot;より狭い拡大変換は?&quot;}
+    C --&gt; D[&quot;byte→short の方が狭い&quot;]
+    D --&gt; E([出力: foo(int, short)])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>候補</th>
+<th>第 1 引数</th>
+<th>第 2 引数</th>
+<th>評価</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(int,short)</code></td>
+<td>byte→int</td>
+<td>byte→short</td>
+<td>狭い</td>
+</tr>
+<tr>
+<td><code>foo(int,int)</code></td>
+<td>byte→int</td>
+<td>byte→int</td>
+<td>広い</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>候補同士で「より狭い変換で済む」方が優先されます。</p>
+<hr />
+<h2 id="vol083-test13">vol08_3/Test13</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/Test13.java</code></li>
+<li>テーマ: <code>short[]</code> は <code>int[]</code>/<code>byte[]</code> のいずれにも渡せない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] x)  { ... }
+static void foo(byte[] b) { ... }
+short[] s = {10, 20, 30};
+foo(s);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int[]), foo(byte[]) を確認&quot;]
+    B --&gt; C[&quot;short[] を渡す&quot;]
+    C --&gt; D{&quot;配列型は互換?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>実引数</th>
+<th>候補</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>short[]</code></td>
+<td><code>int[]</code></td>
+<td>違う配列型</td>
+</tr>
+<tr>
+<td><code>short[]</code></td>
+<td><code>byte[]</code></td>
+<td>違う配列型</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>Test5</code> と同様、配列型の拡大変換は行われません。</p>
+<hr />
+<h2 id="vol083-testmain01">vol08_3/TestMain01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain01.java</code></li>
+<li>テーマ: <code>main</code> の戻り値型が <code>int</code>（実行時エラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static int main(String[] args) { ... return 0; }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を探す（戻り値 void）&quot;]
+    B --&gt; C{&quot;見つかる?&quot;}
+    C -- No --&gt; D([起動エラー: main がない])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>コンパイル成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td>JVM が <code>main(String[]) void</code> を見つけられない</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>JVM が呼ぶ <code>main</code> は戻り値 <code>void</code> 限定です。</p>
+<hr />
+<h2 id="vol083-testmain02">vol08_3/TestMain02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain02.java</code></li>
+<li>テーマ: <code>main(String args)</code>（配列じゃない）は起動できない（実行時エラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String args) { ... }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を探す&quot;]
+    B --&gt; C{&quot;配列引数あり?&quot;}
+    C -- No --&gt; D([起動エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>コンパイル成功</td>
+</tr>
+<tr>
+<td>2</td>
+<td>実行</td>
+<td><code>main</code> が見つからない</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>JVM のエントリは <code>String[]</code> を要求します。</p>
+<hr />
+<h2 id="vol083-testmain03">vol08_3/TestMain03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain03.java</code></li>
+<li>テーマ: 標準的な <code>main</code> の動作（出力 1 文字）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) { System.out.print(&quot;A&quot;); }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main を実行&quot;]
+    B --&gt; C([出力: A])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>println</code> ではなく <code>print</code> なので改行なしで <code>A</code> を出力します。</p>
+<hr />
+<h2 id="vol083-testmain04">vol08_3/TestMain04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain04.java</code></li>
+<li>テーマ: <code>main(String)</code> と <code>main(String[])</code> の併存（オーバーロード）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String args) { System.out.print(args); }
+public static void main(String[] args) {
+    main(&quot;A&quot;);
+    System.out.print(&quot;B&quot;);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を呼ぶ&quot;]
+    B --&gt; C[&quot;main(\&quot;A\&quot;) を呼ぶ → A&quot;]
+    C --&gt; D[&quot;B を表示&quot;]
+    D --&gt; E([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>呼ばれる main</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>main(String[])</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main(String)</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>main(String[])</code> 続き</td>
+<td><code>B</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> という名前でも <code>main(String[])</code> と <code>main(String)</code> は別シグネチャ。出力は <code>AB</code>。</p>
+<hr />
+<h2 id="vol083-testmain05">vol08_3/TestMain05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain05.java</code></li>
+<li>テーマ: <code>args</code> を順に表示。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) {
+    for (int i = 0; i &lt; args.length; i++) System.out.println(args[i]);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;i = 0&quot;]
+    B --&gt; C{&quot;i &lt; args.length&quot;}
+    C -- Yes --&gt; D[&quot;args[i] を表示&quot;]
+    D --&gt; E[&quot;i++&quot;]
+    E --&gt; C
+    C -- No --&gt; F([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動例</th>
+<th><code>args</code></th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A B C</code></td>
+<td><code>{&quot;A&quot;,&quot;B&quot;,&quot;C&quot;}</code></td>
+<td><code>A</code> / <code>B</code> / <code>C</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td><code>{}</code></td>
+<td>（何も出さず終了）</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数 0 個でも例外は出ません。要素アクセスは <code>length</code> でガードされています。</p>
+<hr />
+<h2 id="vol083-testmain06">vol08_3/TestMain06</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain06.java</code></li>
+<li>テーマ: <code>args[0] + args[1]</code> で文字列連結。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) {
+    System.out.print(args[0] + args[1]);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;args.length &gt;= 2 を想定&quot;]
+    B --&gt; C[&quot;args[0] と args[1] を連結&quot;]
+    C --&gt; D([出力])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動例</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... Hello World</code></td>
+<td><code>HelloWorld</code></td>
+</tr>
+<tr>
+<td><code>java ... Hello</code>（不足）</td>
+<td><code>ArrayIndexOutOfBoundsException</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>+</code> は文字列の連結です。引数不足だと実行時例外になります。</p>
+<hr />
+<h2 id="vol083-testmain07">vol08_3/TestMain07</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain07.java</code></li>
+<li>テーマ: <code>args[x++]</code> の評価順。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String[] args) {
+    int x = 0;
+    System.out.print(args[x++]);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;x = 0&quot;]
+    B --&gt; C[&quot;args[0] を取り出す（直後に x=1）&quot;]
+    C --&gt; D([出力: args[0]])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動例</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A B</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td><code>ArrayIndexOutOfBoundsException</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>後置 <code>x++</code> は「取り出してから +1」。<code>args[0]</code> が表示されます。</p>
+<hr />
+<h2 id="vol083-testmain08">vol08_3/TestMain08</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestMain08.java</code></li>
+<li>テーマ: 複数の <code>main</code> を経由する。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String args1, String args2) { System.out.print(args1 + args2); }
+public static void main(String[] args) { main(args[0]); }
+private static void main(String args) { main(args, &quot;X&quot;); }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;main(String[]) を呼ぶ&quot;]
+    B --&gt; C[&quot;main(args[0]) を呼ぶ&quot;]
+    C --&gt; D[&quot;main(args, \&quot;X\&quot;) を呼ぶ&quot;]
+    D --&gt; E([出力: args[0] + X])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動例</th>
+<th>流れ</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A</code></td>
+<td><code>main([&quot;A&quot;])</code> → <code>main(&quot;A&quot;)</code> → <code>main(&quot;A&quot;,&quot;X&quot;)</code></td>
+<td><code>AX</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td><code>args[0]</code> 未指定</td>
+<td><code>ArrayIndexOutOfBoundsException</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>main</code> という名前でもシグネチャが違えばオーバーロードできます。JVM が呼ぶのは <code>main(String[])</code> のみ。</p>
+<hr />
+<h2 id="vol083-testvararg01">vol08_3/TestVarArg01</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg01.java</code></li>
+<li>テーマ: 可変長引数で何回呼んでも OK。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) { System.out.print(&quot;A&quot;); }
+foo(); foo(1); foo(1,2); foo(1,2,3); foo(1,2,3,4);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;foo() → A&quot;]
+    B --&gt; C[&quot;foo(1) → A&quot;]
+    C --&gt; D[&quot;foo(1,2) → A&quot;]
+    D --&gt; E[&quot;foo(1,2,3) → A&quot;]
+    E --&gt; F[&quot;foo(1,2,3,4) → A&quot;]
+    F --&gt; G([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>foo(1)</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>foo(1,2)</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>foo(1,2,3)</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>foo(1,2,3,4)</code></td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>最終出力は <code>AAAAA</code>。可変長引数は 0 個以上を受け取れます。</p>
+<hr />
+<h2 id="vol083-testvararg02">vol08_3/TestVarArg02</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg02.java</code></li>
+<li>テーマ: 通常引数 + 可変長引数（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x, int... y) { ... }
+foo();        // ← x が必要 → エラー
+foo(1);
+foo(1, 2);
+foo(1, 2, 3);
+foo(1, 2, 3, 4);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo() を確認&quot;]
+    B --&gt; C{&quot;x は渡されている?&quot;}
+    C -- No --&gt; D([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th><code>int x</code></th>
+<th><code>int... y</code></th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo()</code></td>
+<td>なし</td>
+<td>0 個扱い可</td>
+<td>エラー</td>
+</tr>
+<tr>
+<td><code>foo(1)</code></td>
+<td>1</td>
+<td>0 個</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>foo(1,2)</code></td>
+<td>1</td>
+<td>{2}</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>foo(1,2,3)</code></td>
+<td>1</td>
+<td>{2,3}</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><code>foo(1,2,3,4)</code></td>
+<td>1</td>
+<td>{2,3,4}</td>
+<td>OK</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数の前の通常引数は省略不可。最初の <code>foo()</code> でコンパイルが止まります。</p>
+<hr />
+<h2 id="vol083-testvararg03">vol08_3/TestVarArg03</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg03.java</code></li>
+<li>テーマ: 可変長引数を 2 つ並べることはできない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x, int... y) { ... }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;int... x を読む&quot;]
+    B --&gt; C[&quot;int... y が続く&quot;]
+    C --&gt; D{&quot;可変長引数は最後で 1 つだけ?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>記述</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>int... x</code></td>
+<td>1 つ目の可変長引数</td>
+</tr>
+<tr>
+<td><code>int... y</code></td>
+<td>2 つ目（位置として無効）</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数は 1 メソッドにつき 1 つだけ、かつ最後の引数として書きます。</p>
+<hr />
+<h2 id="vol083-testvararg04">vol08_3/TestVarArg04</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg04.java</code></li>
+<li>テーマ: 可変長引数の後ろに通常引数を書けない（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x, int y) { ... }</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;int... x を読む&quot;]
+    B --&gt; C[&quot;後ろに int y がある&quot;]
+    C --&gt; D{&quot;可変長引数は最後?&quot;}
+    D -- No --&gt; E([エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>記述</th>
+<th>判定</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>int... x</code></td>
+<td>可変長</td>
+</tr>
+<tr>
+<td><code>int y</code></td>
+<td>後続不可</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数は必ず最後に置きます。</p>
+<hr />
+<h2 id="vol083-testvararg05">vol08_3/TestVarArg05</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg05.java</code></li>
+<li>テーマ: 可変長引数の要素型への拡大変換。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int... x) { System.out.print(&quot;A&quot;); }
+short s = 10;
+foo(s); // short → int に拡大して 1 個の可変長引数として渡る</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B[&quot;short s = 10&quot;]
+    B --&gt; C[&quot;foo(s): short→int に拡大して 1 個渡す&quot;]
+    C --&gt; D([出力: A])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>値</th>
+<th>型</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10</td>
+<td><code>short</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10</td>
+<td><code>int</code>（拡大）</td>
+<td><code>A</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>可変長引数の要素型へ拡大変換できる値も受け取れます。</p>
+<hr />
+<h2 id="vol083-testvararg06">vol08_3/TestVarArg06</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg06.java</code></li>
+<li>テーマ: 2 引数の通常版と可変長版の優先順位。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(long x1, long x2) { System.out.println(&quot;foo(long, long)&quot;); }
+static void foo(long... x)        { System.out.println(&quot;foo(long...)&quot;); }
+foo(0L);
+foo(0L, 1L);
+foo(0L, 1L, 2L);
+foo(0L, 1L, 2L, 3L);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;引数 2 個?&quot;}
+    B -- Yes --&gt; C[&quot;foo(long,long) を優先&quot;]
+    B -- No --&gt; D[&quot;foo(long...) を選ぶ&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(0L)</code></td>
+<td><code>foo(long...)</code></td>
+<td><code>foo(long...)</code></td>
+</tr>
+<tr>
+<td><code>foo(0L,1L)</code></td>
+<td><code>foo(long,long)</code></td>
+<td><code>foo(long, long)</code></td>
+</tr>
+<tr>
+<td><code>foo(0L,1L,2L)</code></td>
+<td><code>foo(long...)</code></td>
+<td><code>foo(long...)</code></td>
+</tr>
+<tr>
+<td><code>foo(0L,1L,2L,3L)</code></td>
+<td><code>foo(long...)</code></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>引数個数がぴったり一致する通常版があれば、可変長版より優先されます。</p>
+<hr />
+<h2 id="vol083-testvararg07">vol08_3/TestVarArg07</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg07.java</code></li>
+<li>テーマ: 通常版に拡大変換 + 個数不一致のときの選択。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(long x1, long x2) { ... }
+static void foo(long... x)        { ... }
+int i1=10, i2=20, i3=30;
+foo(i1);         // 1 個 → foo(long...)
+foo(i1, i2, i3); // 3 個 → foo(long...)</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;引数 2 個?&quot;}
+    B -- No --&gt; C[&quot;foo(long...) を選ぶ&quot;]
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(i1)</code></td>
+<td><code>foo(long...)</code></td>
+<td><code>foo(long...)</code></td>
+</tr>
+<tr>
+<td><code>foo(i1,i2,i3)</code></td>
+<td><code>foo(long...)</code></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>通常版に対応する個数がなければ、可変長版が選ばれます。</p>
+<hr />
+<h2 id="vol083-testvararg08">vol08_3/TestVarArg08</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg08.java</code></li>
+<li>テーマ: 1 引数の通常版と可変長版の優先順位。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int x)    { System.out.println(&quot;foo(int x)&quot;); }
+static void foo(int... x) { System.out.println(&quot;foo(int... x)&quot;); }
+foo(12);</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([開始]) --&gt; B{&quot;通常版 foo(int) が適用可?&quot;}
+    B -- Yes --&gt; C[&quot;foo(int) を優先&quot;]
+    C --&gt; D([出力: foo(int x)])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>呼び出し</th>
+<th>選ばれる</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>foo(12)</code></td>
+<td><code>foo(int)</code></td>
+<td><code>foo(int x)</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p>ぴったり 1 個の通常版があれば可変長版より優先されます。</p>
+<hr />
+<h2 id="vol083-testvararg09">vol08_3/TestVarArg09</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg09.java</code></li>
+<li>テーマ: <code>int[]</code> と <code>int...</code> は同居不可（コンパイルエラー教材）。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">static void foo(int[] x)   { ... }
+static void foo(int... x)  { ... }
+foo(12); // 呼び出し以前に重複定義でエラー</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([コンパイル開始]) --&gt; B[&quot;foo(int[]) を確認&quot;]
+    B --&gt; C[&quot;foo(int...) を確認&quot;]
+    C --&gt; D{&quot;別シグネチャ?&quot;}
+    D -- No --&gt; E([重複エラー])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>ステップ</th>
+<th>記述</th>
+<th>結果</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>int[]</code></td>
+<td>登録</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>int...</code></td>
+<td>同じ扱い → 重複</td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>vol08_3/SampleVarArgOverride02</code> と同じ。</p>
+<hr />
+<h2 id="vol083-testvararg10">vol08_3/TestVarArg10</h2>
+<ul>
+<li>対象ファイル: <code>src/vol08_3/TestVarArg10.java</code></li>
+<li>テーマ: <code>main</code> の引数を可変長で受ける。</li>
+</ul>
+<h3 id="ソースの要点">ソースの要点</h3>
+<pre><code class="language-java">public static void main(String... args) {
+    System.out.println(args[0]);
+}</code></pre>
+<h3 id="フローチャート">フローチャート</h3>
+<pre class="mermaid">
+flowchart TD
+    A([JVM 起動]) --&gt; B[&quot;args は String[] と同等に渡る&quot;]
+    B --&gt; C[&quot;args[0] を出力&quot;]
+    C --&gt; D([終了])
+</pre>
+<h3 id="トレース表">トレース表</h3>
+<table>
+<thead><tr>
+<th>起動例</th>
+<th>出力</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java ... A</code></td>
+<td><code>A</code></td>
+</tr>
+<tr>
+<td><code>java ...</code></td>
+<td><code>ArrayIndexOutOfBoundsException</code></td>
+</tr>
+</tbody></table>
+<h3 id="確認ポイント">確認ポイント</h3>
+<p><code>String[]</code> と <code>String...</code> は同等に扱えます（バイトコード上は同じ配列）。</p>
+<hr />
+<h2 id="まとめ">まとめ</h2>
+<ul>
+<li>メソッドのテーマは大きく「定義」「呼び出し」「引数」「戻り値」「スコープ」「オーバーロード」「可変長引数」「<code>main</code> メソッド」の 8 つに分かれます。</li>
+<li>どのファイルも独立したサンプル（または意図的なエラー教材）です。エラー教材はコメントを外して 1 ファイルずつコンパイルしてください。</li>
+<li>HTML 版（<code>FLOWCHARTS_AND_TRACES.html</code>）には同じ内容が Mermaid CDN を使ってブラウザで開ける形で用意してあります。</li>
+</ul>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "default", securityLevel: "loose" });
+</script>
+</body>
+</html>

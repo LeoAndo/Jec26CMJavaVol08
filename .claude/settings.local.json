@@ -4,7 +4,8 @@
       "Bash(grep:*)",
       "WebSearch",
       "Bash(git log:*)",
-      "Skill(load-rules:*)"
+      "Skill(load-rules:*)",
+      "Bash(python3 *)"
     ],
     "deny": []
   }
