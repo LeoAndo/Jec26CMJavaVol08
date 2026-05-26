@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "WebSearch",
+      "Bash(git log:*)",
+      "Skill(load-rules:*)"
+    ],
+    "deny": []
+  }
+}
