@@ -188,7 +188,7 @@ double d = 3.4;
 meth((int) d);  // キャストしないとコンパイルエラー
 ```
 
-`SampleArg03` には「キャストを書かないとどうなるか」のエラー例がコメントで残っています。
+`SampleArg03` は「キャストを書かないとどうなるか」を実コードで確認するエラー例です。単体コンパイルすると、`double` から `int` へ暗黙に変換できないことを確認できます。
 
 ---
 
@@ -238,6 +238,8 @@ public static void main(String[] args) {
 }
 ```
 
+`vol08_2/SampleMethodLocal01` は対照用のエラー例です。`foo` の中で宣言した `x` を `main` から直接参照しており、ローカル変数のスコープ外参照としてコンパイルエラーになります。
+
 ### 6.2 引数も「ローカル変数」（`vol08_2/SampleMethodLocal03`）
 
 引数として渡された変数の値を書き換えても、呼び出し元には影響しません（基本型の場合）。
@@ -276,7 +278,7 @@ static int add(int v, int w, int u)  { return v + w + u; }
 ### 8.2 シグネチャ（`SignatureSample01`）
 
 メソッドシグネチャ = **メソッド名 + 引数リスト（型と順序）**。
-**戻り値の型はシグネチャに含まれません**。`vol08_2/SampleOverload02` がコメントで示すとおり、引数名だけ違うものは「重複」とみなされコンパイルエラーになります。
+**戻り値の型はシグネチャに含まれません**。`vol08_2/SampleOverload02` が実コードで示すとおり、引数名だけ違うものは「重複」とみなされコンパイルエラーになります。
 
 ### 8.3 呼び出し時の解決（`vol08_3/SampleCallOverload01`）
 
@@ -340,7 +342,7 @@ static void foo(int... x) {
 - 可変長引数は **必ず引数リストの最後** に置く
 - 1 メソッドに **可変長引数は 1 つだけ**
 - `static void foo(int... x, int y)` や `static void foo(int... x, int... y)` はコンパイルエラー
-  （`TestVarArg03`, `TestVarArg04` がコメントで例示）
+  （`TestVarArg03`, `TestVarArg04` が実コードで例示）
 
 ### 10.3 オーバーロードとの組み合わせ（`SampleVarArgOverride03`〜`05`）
 
@@ -359,7 +361,7 @@ public static void main(String... args) { ... }
 
 ## 11. 演習問題
 
-実際の演習問題は以下のファイルにあります。各ファイルは独立して実行できます。
+実際の演習問題は以下のファイルにあります。多くのファイルは独立して実行できますが、コンパイルエラー確認用のファイルは 1 ファイルずつ `javac` で確認します。
 
 | ファイル群 | 内容 |
 |----------|------|
@@ -370,11 +372,42 @@ public static void main(String... args) { ... }
 | `src/vol08_3/TestVarArg01.java` 〜 `TestVarArg10.java` | 可変長引数の演習 |
 | `src/Kakunin01.java` | 識別子・予約語・修飾子の確認問題 |
 
+### コンパイルエラー確認用サンプル
+
+以下のファイルは、コメントアウトせずにエラー箇所を実コードとして残しています。コンパイルエラーの内容と確認手順は `FLOWCHARTS_AND_TRACES.md` にまとめています。
+
+| ファイル | 確認する内容 |
+|----------|--------------|
+| `src/Kakunin01.java` | 数字始まり、予約語、不正文字はメソッド名に使えない |
+| `src/Test0818.java` | 必要な引数を渡さない呼び出しはできない |
+| `src/vol08_2/SampleArg03.java` | `double` を `int` 引数へ暗黙に渡せない |
+| `src/vol08_2/SampleMethodLocal01.java` | ローカル変数は宣言されたメソッドの外から参照できない |
+| `src/vol08_2/SampleOverload02.java` | 引数名だけ違うメソッドはオーバーロードにならない |
+| `src/vol08_2/Test0807.java` | `static` メソッドからインスタンスメソッドを直接呼べない |
+| `src/vol08_2/Test0810.java` | `int` を `char` 引数へ暗黙に渡せない |
+| `src/vol08_2/Test0812.java` | Java では引数なしを `(void)` と書かない |
+| `src/vol08_2/Test0818.java` | 必要な引数を渡さない呼び出しはできない |
+| `src/vol08_3/SampleCallOverload02.java` | `int` は `short` へ暗黙に縮小変換されない |
+| `src/vol08_3/SampleCallOverload03.java` | 複数のオーバーロード候補が同程度に一致して曖昧になる |
+| `src/vol08_3/SampleStaticMethod01.java` | `static` な `main` からインスタンスメソッドを直接呼べない |
+| `src/vol08_3/SampleVarArg02.java` | 可変長引数の前にある通常引数は省略できない |
+| `src/vol08_3/SampleVarArgOverride01.java` | 同じ可変長引数シグネチャは重複になる |
+| `src/vol08_3/SampleVarArgOverride02.java` | `int...` と `int[]` は同時に宣言できない |
+| `src/vol08_3/Test10.java` | 引数名だけ違う `add(int, int)` は重複になる |
+| `src/vol08_3/Test13.java` | `short[]` は `int[]` / `byte[]` へ変換できない |
+| `src/vol08_3/Test3.java` | 引数名だけ違っても同じシグネチャになる |
+| `src/vol08_3/Test5.java` | `byte[]` は `int[]` / `float[]` へ変換できない |
+| `src/vol08_3/Test9.java` | 戻り値型や修飾子だけではオーバーロードできない |
+| `src/vol08_3/TestVarArg02.java` | 可変長引数の前にある通常引数は省略できない |
+| `src/vol08_3/TestVarArg03.java` | 可変長引数を複数置くことはできない |
+| `src/vol08_3/TestVarArg04.java` | 可変長引数の後ろに通常引数は置けない |
+| `src/vol08_3/TestVarArg09.java` | `int[]` と `int...` は同時に宣言できない |
+
 ### 演習の進め方
 
 1. 各ファイルを開き、**実行する前に出力を予想** する
 2. 実行して結果を確認する
-3. コメントアウトされているファイルは「コンパイルエラーになる理由」を考える
+3. コンパイルエラー確認用のファイルは「なぜコンパイルできないか」を考える
 
 ### 例: `Test0801` の出力を予想してみよう
 

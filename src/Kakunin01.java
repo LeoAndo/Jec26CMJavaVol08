@@ -17,37 +17,37 @@ public class Kakunin01 {
         System.out.println("Synchronized");
     }
 
-//    private static void 12Test() {
-//        System.out.println("12Test");
-//    }
+    private static void 12Test() {
+        System.out.println("12Test");
+    }
 
     private static void TRUE() {
         System.out.println("TRUE");
     }
 
-//    private static void static() {
-//        System.out.println("static");
-//    }
-//
-//    private static void strictfp() {
-//        System.out.println("strictfp");
-//    }
+    private static void static() {
+        System.out.println("static");
+    }
+
+    private static void strictfp() {
+        System.out.println("strictfp");
+    }
 
     private static void MAX() {
         System.out.println("MAX");
     }
 
-//    private static void Test#() {
-//        System.out.println("Test#");
-//    }
-//
-//    private static void class() {
-//        System.out.println("class");
-//    }
-//
-//    private static void native() {
-//        System.out.println("native");
-//    }
+    private static void Test#() {
+        System.out.println("Test#");
+    }
+
+    private static void class() {
+        System.out.println("class");
+    }
+
+    private static void native() {
+        System.out.println("native");
+    }
 
     static void method() {
         System.out.println("method");
